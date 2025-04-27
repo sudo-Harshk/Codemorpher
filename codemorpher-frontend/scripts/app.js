@@ -12,7 +12,7 @@ function handleTranslate() {
 
   startLoading();
 
-  fetch('http://localhost:5000/translate', {
+  fetch('https://codemorpher-backend.onrender.com/translate', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
