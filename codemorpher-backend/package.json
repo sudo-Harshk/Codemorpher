@@ -1,0 +1,26 @@
+{
+  "name": "codemorpher-backend",
+  "version": "1.0.0",
+  "main": "server.js", 
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "description": "",
+  "dependencies": {
+    "@google/genai": "^0.9.0",
+    "axios": "^1.8.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "firebase-admin": "^13.3.0",
+    "openai": "^4.95.1"
+  },
+  "devDependencies": {
+    "@gradio/client": "^1.14.2"
+  }
+}

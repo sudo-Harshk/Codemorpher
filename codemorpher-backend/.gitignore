@@ -1,0 +1,12 @@
+# Node modules
+node_modules/
+
+# Env file
+.env
+
+# Firebase private keys (if still present)
+firebase/firebaseKey.json
+
+# OS/System files
+.DS_Store
+Thumbs.db
