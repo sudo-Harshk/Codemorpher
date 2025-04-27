@@ -3,7 +3,7 @@ document.getElementById('translateButton').addEventListener('click', handleTrans
 
 function handleTranslate() {
   const javaCode = document.getElementById('javaCode').value.trim();
-  const targetLanguage = document.getElementById('targetLanguage').value; // ✅ new hidden input (from selected icon)
+  const targetLanguage = document.getElementById('targetLanguage').value; 
 
   if (!javaCode || !targetLanguage) {
     alert("Please enter code and select a target language.");
@@ -73,9 +73,15 @@ function showError(message) {
   const content = document.getElementById('loadingContent');
   content.innerHTML = `
     <div class="error-message">❌ ${message}</div>
-    <button onclick="startLoading()">Retry</button>
+    <button onclick="retryTranslate()">Retry</button>
   `;
   document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+// ✅ NEW: Retry Translate without reloading page
+function retryTranslate() {
+  stopLoading(); 
+  handleTranslate(); 
 }
 
 // Start Loading Animation
@@ -112,7 +118,7 @@ function stopLoading() {
   document.getElementById('loadingOverlay').style.display = 'none';
 }
 
-// Attach retry icon
+// Attach retry icon (top right corner reload icon)
 document.querySelector('.retry-icon').addEventListener('click', handleTranslate);
 
 // Collapse output sections
@@ -137,12 +143,12 @@ function updateLineCount() {
 javaCodeInput.addEventListener('input', updateLineCount);
 window.addEventListener('DOMContentLoaded', updateLineCount);
 
-// ✅ NEW: Language Selection (Horizontal Icons)
+// Language Selection (Icons for Target Language)
 const langOptions = document.querySelectorAll('.lang-option');
 langOptions.forEach(option => {
   option.addEventListener('click', () => {
-    langOptions.forEach(opt => opt.classList.remove('selected')); // Remove selected class
-    option.classList.add('selected'); // Add to clicked one
-    document.getElementById('targetLanguage').value = option.getAttribute('data-value'); // Set hidden input
+    langOptions.forEach(opt => opt.classList.remove('selected'));
+    option.classList.add('selected');
+    document.getElementById('targetLanguage').value = option.getAttribute('data-value');
   });
 });
