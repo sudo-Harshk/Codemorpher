@@ -1,3 +1,7 @@
+// Global timer variables
+let progressInterval = null;
+let countdownTimer = null;
+
 // Attach translate button event
 document.getElementById('translateButton').addEventListener('click', handleTranslate);
 
@@ -78,13 +82,13 @@ function showError(message) {
   document.getElementById('loadingOverlay').style.display = 'flex';
 }
 
-// ✅ NEW: Retry Translate without reloading page
+// Retry Translate
 function retryTranslate() {
   stopLoading(); 
   handleTranslate(); 
 }
 
-// Start Loading Animation
+// Start Loading Animation + Estimated Time Countdown
 function startLoading() {
   const overlay = document.getElementById('loadingOverlay');
   const progress = document.getElementById('progressBar');
@@ -99,23 +103,41 @@ function startLoading() {
     "Java and JavaScript are not the same!"
   ];
 
+  // Show initial random fun fact
   fact.textContent = `Fun Fact: ${facts[Math.floor(Math.random() * facts.length)]}`;
 
+  // Animate progress bar
   let width = 0;
+  if (progressInterval) clearInterval(progressInterval);
   progress.style.width = '0%';
-  const interval = setInterval(() => {
+  progressInterval = setInterval(() => {
     if (width >= 100) {
-      clearInterval(interval);
+      clearInterval(progressInterval);
     } else {
-      width += 10;
+      width += 2;
       progress.style.width = width + '%';
     }
   }, 200);
+
+  // Start Estimated Countdown
+  let estimatedTime = 12; // seconds
+  if (countdownTimer) clearInterval(countdownTimer);
+  countdownTimer = setInterval(() => {
+    if (estimatedTime > 0) {
+      fact.textContent = `Translating... ~${estimatedTime} seconds remaining`;
+      estimatedTime--;
+    } else {
+      fact.textContent = "Almost done... Finalizing translation! ✨";
+    }
+  }, 1000);
 }
 
-// Stop Loading Animation
+// Stop Loading Animation and Clear Timers
 function stopLoading() {
   document.getElementById('loadingOverlay').style.display = 'none';
+  
+  if (progressInterval) clearInterval(progressInterval);
+  if (countdownTimer) clearInterval(countdownTimer);
 }
 
 // Attach retry icon (top right corner reload icon)
