@@ -57,26 +57,29 @@ header {
   font-family: "Rowdies", sans-serif;
   font-weight: 300;
 }
+
 .rowdies-regular {
   font-family: "Rowdies", sans-serif;
   font-weight: 400;
 }
+
 .rowdies-bold {
   font-family: "Rowdies", sans-serif;
   font-weight: 700;
 }
 
+/* ✅ Logo + Name aligned nicely */
 .header-with-logo {
   display: flex;
   align-items: center;
+  gap: 12px;
   justify-content: center;
-  gap: 10px;
   margin-bottom: 20px;
 }
 
 .logo-icon {
-  width: 40px;
-  height: 40px;
+  width: 50px; /* Bigger logo now */
+  height: 50px;
   object-fit: contain;
 }
 
@@ -488,21 +491,4 @@ pre {
   0% { transform: scale(0); opacity: 0; }
   60% { transform: scale(1.2); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
-}
-
-
-
-
-.header-with-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.logo-icon {
-  width: 40px; /* Adjust size */
-  height: 40px;
-  object-fit: contain;
 }
