@@ -66,6 +66,20 @@ header {
   font-weight: 700;
 }
 
+.header-with-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
 /* ---------------------------------------------------
    3. Layout and Card Structure
 --------------------------------------------------- */
@@ -474,4 +488,21 @@ pre {
   0% { transform: scale(0); opacity: 0; }
   60% { transform: scale(1.2); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+
+
+
+.header-with-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.logo-icon {
+  width: 40px; /* Adjust size */
+  height: 40px;
+  object-fit: contain;
 }
