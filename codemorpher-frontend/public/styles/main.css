@@ -352,7 +352,25 @@ pre {
   display: flex;
   gap: 10px;
   justify-content: flex-start;
+  flex-wrap: wrap; 
 }
+
+.output-section .buttons button {
+  flex: 1 1 auto; 
+  min-width: 140px; 
+}
+
+@media (max-width: 600px) {
+  .output-section .buttons {
+    flex-direction: column; 
+    gap: 8px; 
+  }
+
+  .output-section .buttons button {
+    width: 100%; 
+  }
+}
+
 
 /* ---------------------------------------------------
    8. Loading Overlay
