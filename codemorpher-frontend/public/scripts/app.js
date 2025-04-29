@@ -175,41 +175,36 @@ langOptions.forEach(option => {
   });
 });
 
-// ✅ Run Translated Code Feature
-function runTranslatedCode() {
-  const language = document.getElementById('targetLanguage').value;
+function runCode() {
+  const selectedLang = document.getElementById('targetLanguage').value;
 
-  let compilerURL = "";
-
-  switch (language) {
+  let compilerUrl = '';
+  switch (selectedLang) {
     case 'javascript':
-      compilerURL = "https://onecompiler.com/javascript";
+      compilerUrl = 'https://onecompiler.com/javascript';
       break;
     case 'python':
-      compilerURL = "https://onecompiler.com/python";
+      compilerUrl = 'https://onecompiler.com/python';
       break;
     case 'c':
-      compilerURL = "https://onecompiler.com/c";
+      compilerUrl = 'https://onecompiler.com/c';
       break;
     case 'cpp':
-      compilerURL = "https://onecompiler.com/cpp";
+      compilerUrl = 'https://onecompiler.com/cpp';
       break;
     case 'csharp':
-      compilerURL = "https://onecompiler.com/csharp";
+      compilerUrl = 'https://onecompiler.com/csharp';
       break;
     case 'typescript':
-      compilerURL = "https://onecompiler.com/typescript";
+      compilerUrl = 'https://onecompiler.com/typescript';
       break;
     default:
-      alert("Compiler not available for this language yet!");
+      alert('Selected language is not supported yet.');
       return;
   }
 
-  window.open(compilerURL, '_blank');
+  if (compilerUrl) {
+    window.open(compilerUrl, '_blank'); 
+  }
 }
 
-// Attach Run Code Button event
-const runButton = document.getElementById('runCodeButton');
-if (runButton) {
-  runButton.addEventListener('click', runTranslatedCode);
-}
