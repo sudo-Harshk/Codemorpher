@@ -1,8 +1,6 @@
-// Global timer variables
 let progressInterval = null;
 let countdownTimer = null;
 
-// Attach translate button event
 document.getElementById('translateButton').addEventListener('click', handleTranslate);
 
 function handleTranslate() {
@@ -41,13 +39,11 @@ function handleTranslate() {
   });
 }
 
-// ✅ Update Translated Code
 function updateTranslatedCode(lines, language) {
   const codeBlock = document.getElementById('translatedCodeBlock');
   codeBlock.className = `language-${language.toLowerCase()}`;
   codeBlock.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
 
-  // ✅ Skip Prism highlight for PHP
   if (language.toLowerCase() !== 'php') {
     Prism.highlightElement(codeBlock);
   }
@@ -59,7 +55,6 @@ function updateTranslatedCode(lines, language) {
   `;
 }
 
-// ✅ Open Online Compiler
 function runCode(language) {
   const codeBlock = document.getElementById('translatedCodeBlock');
   const code = codeBlock.innerText.trim();
@@ -103,19 +98,16 @@ function runCode(language) {
   window.open(url, "_blank");
 }
 
-// ✅ Update Debugging Steps
 function updateDebuggingSteps(steps) {
   const ul = document.querySelector('#debuggingSteps .debug-list');
   ul.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
 }
 
-// ✅ Update Algorithm Steps
 function updateAlgorithm(steps) {
   const ol = document.querySelector('#algorithm .algorithm-list');
   ol.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
 }
 
-// ✅ Escape HTML
 function escapeHTML(text) {
   return text.replace(/[&<>'"]/g, c => ({
     '&': '&amp;',
@@ -126,7 +118,6 @@ function escapeHTML(text) {
   }[c]));
 }
 
-// ✅ Show Error
 function showError(message) {
   const content = document.getElementById('loadingContent');
   content.innerHTML = `
@@ -136,13 +127,11 @@ function showError(message) {
   document.getElementById('loadingOverlay').style.display = 'flex';
 }
 
-// Retry Translate
 function retryTranslate() {
   stopLoading();
   handleTranslate();
 }
 
-// ✅ Start Loading
 function startLoading() {
   const overlay = document.getElementById('loadingOverlay');
   const progress = document.getElementById('progressBar');
@@ -183,14 +172,12 @@ function startLoading() {
   }, 1000);
 }
 
-// ✅ Stop Loading
 function stopLoading() {
   document.getElementById('loadingOverlay').style.display = 'none';
   if (progressInterval) clearInterval(progressInterval);
   if (countdownTimer) clearInterval(countdownTimer);
 }
 
-// ✅ Copy Code
 function copyToClipboard() {
   const codeBlock = document.getElementById('translatedCodeBlock');
   const code = codeBlock.innerText.trim();
@@ -204,12 +191,10 @@ function copyToClipboard() {
     });
 }
 
-// ✅ Collapse Output Sections
 function toggleCollapse(id) {
   document.getElementById(id).classList.toggle('collapsed');
 }
 
-// ✅ Line Count Tracker
 const javaCodeInput = document.getElementById('javaCode');
 const lineCounter = document.getElementById('lineCounter');
 
@@ -220,7 +205,6 @@ function updateLineCount() {
 javaCodeInput.addEventListener('input', updateLineCount);
 window.addEventListener('DOMContentLoaded', updateLineCount);
 
-// ✅ Language Selection
 const langOptions = document.querySelectorAll('.lang-option');
 langOptions.forEach(option => {
   option.addEventListener('click', () => {
@@ -230,5 +214,4 @@ langOptions.forEach(option => {
   });
 });
 
-// ✅ Retry Icon (Reload Button)
 document.querySelector('.retry-icon').addEventListener('click', handleTranslate);

@@ -128,8 +128,8 @@ header {
 }
 
 .retry-icon {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border: 2px solid #26A69A;
   border-radius: 50%;
   position: relative;
@@ -141,8 +141,8 @@ header {
 .retry-icon::after {
   content: '';
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border: 2px solid #26A69A;
 }
 
@@ -165,6 +165,20 @@ header {
 .retry-icon:hover {
   transform: rotate(360deg);
 }
+
+@media (max-width: 768px) {
+  .retry-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .retry-icon::before,
+  .retry-icon::after {
+    width: 8px;
+    height: 8px;
+  }
+}
+
 
 label {
   font-size: 16px;
