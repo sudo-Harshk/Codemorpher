@@ -519,7 +519,26 @@ pre {
   display: flex;
   gap: 10px;
   justify-content: flex-start;
+  flex-wrap: wrap;
 }
+
+.output-section .buttons button {
+  flex: 1 1 45%; 
+  min-width: 120px;
+}
+
+@media (max-width: 768px) {
+  .output-section .buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .output-section .buttons button {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
 
 .copy-button, .run-button {
   background-color: #26A69A;

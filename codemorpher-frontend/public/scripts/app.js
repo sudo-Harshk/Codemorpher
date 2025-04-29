@@ -7,7 +7,7 @@ document.getElementById('translateButton').addEventListener('click', handleTrans
 
 function handleTranslate() {
   const javaCode = document.getElementById('javaCode').value.trim();
-  const targetLanguage = document.getElementById('targetLanguage').value; 
+  const targetLanguage = document.getElementById('targetLanguage').value;
 
   if (!javaCode || !targetLanguage) {
     alert("Please enter code and select a target language.");
@@ -46,24 +46,42 @@ function updateTranslatedCode(lines, language) {
   const pre = document.querySelector('#translatedCode pre');
   pre.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
 
-  // ✅ Add "Run Code" button dynamically
+  // Add Copy and Run buttons dynamically
   const buttonsContainer = document.querySelector('#translatedCode .buttons');
   buttonsContainer.innerHTML = `
     <button onclick="copyToClipboard()">Copy to Clipboard</button>
-    <button onclick="openCompiler('${language}')">Run Code</button>
+    <button onclick="runCode('${language}')">Run Code</button>
   `;
 }
 
-// Open respective online compiler
-function openCompiler(language) {
-  let url = "";
+// Run Code (Auto copy + open compiler)
+function runCode(language) {
+  const codeBlock = document.querySelector('#translatedCode pre');
+  const code = codeBlock.innerText.trim();
 
+  if (!code) {
+    alert('No code to run!');
+    return;
+  }
+
+  navigator.clipboard.writeText(code)
+    .then(() => {
+      console.log('Code copied to clipboard automatically.');
+    })
+    .catch(err => {
+      console.error('Failed to copy code:', err);
+    });
+
+  let url = "";
   switch (language.toLowerCase()) {
     case "python":
       url = "https://www.programiz.com/python-programming/online-compiler/";
       break;
     case "javascript":
-      url = "https://playcode.io/";
+      url = "https://playcode.io/new";
+      break;
+    case "typescript":
+      url = "https://www.typescriptlang.org/play";
       break;
     case "c":
       url = "https://www.onlinegdb.com/online_c_compiler";
@@ -73,9 +91,6 @@ function openCompiler(language) {
       break;
     case "csharp":
       url = "https://dotnetfiddle.net/";
-      break;
-    case "typescript":
-      url = "https://www.typescriptlang.org/play";
       break;
     default:
       alert("No compiler available for this language yet!");
@@ -120,8 +135,8 @@ function showError(message) {
 
 // Retry Translate
 function retryTranslate() {
-  stopLoading(); 
-  handleTranslate(); 
+  stopLoading();
+  handleTranslate();
 }
 
 // Start Loading Animation + Estimated Countdown
@@ -168,12 +183,11 @@ function startLoading() {
 // Stop Loading Animation
 function stopLoading() {
   document.getElementById('loadingOverlay').style.display = 'none';
-  
   if (progressInterval) clearInterval(progressInterval);
   if (countdownTimer) clearInterval(countdownTimer);
 }
 
-// ✅ Improved Copy To Clipboard
+// Copy Translated Code
 function copyToClipboard() {
   const codeBlock = document.querySelector('#translatedCode pre');
   const code = codeBlock.innerText.trim();
@@ -187,7 +201,7 @@ function copyToClipboard() {
     });
 }
 
-// Attach retry icon (top right corner reload icon)
+// Attach retry icon (top right reload icon)
 document.querySelector('.retry-icon').addEventListener('click', handleTranslate);
 
 // Collapse output sections
