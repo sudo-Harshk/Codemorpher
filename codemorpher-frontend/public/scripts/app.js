@@ -46,7 +46,11 @@ function updateTranslatedCode(lines, language) {
   const codeBlock = document.getElementById('translatedCodeBlock');
   codeBlock.className = `language-${language.toLowerCase()}`;
   codeBlock.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
-  Prism.highlightElement(codeBlock);
+
+  // ✅ Skip Prism highlight for PHP
+  if (language.toLowerCase() !== 'php') {
+    Prism.highlightElement(codeBlock);
+  }
 
   const buttonsContainer = document.querySelector('#translatedCode .buttons');
   buttonsContainer.innerHTML = `
@@ -55,7 +59,7 @@ function updateTranslatedCode(lines, language) {
   `;
 }
 
-// ✅ Open Compiler Based on Language
+// ✅ Open Online Compiler
 function runCode(language) {
   const codeBlock = document.getElementById('translatedCodeBlock');
   const code = codeBlock.innerText.trim();
@@ -66,17 +70,19 @@ function runCode(language) {
   }
 
   navigator.clipboard.writeText(code)
-    .then(() => console.log('✅ Code copied automatically!'))
-    .catch(err => console.error('❌ Copy failed:', err));
+    .then(() => console.log('Code copied to clipboard.'))
+    .catch(err => console.error('Failed to copy:', err));
 
   let url = "";
-
   switch (language.toLowerCase()) {
     case "python":
       url = "https://www.programiz.com/python-programming/online-compiler/";
       break;
     case "javascript":
       url = "https://playcode.io/new";
+      break;
+    case "typescript":
+      url = "https://www.typescriptlang.org/play";
       break;
     case "c":
       url = "https://www.onlinegdb.com/online_c_compiler";
@@ -88,13 +94,12 @@ function runCode(language) {
       url = "https://dotnetfiddle.net/";
       break;
     case "php":
-      url = "https://phpfiddle.org/";
+      url = "https://www.onlinegdb.com/online_php_compiler";
       break;
     default:
       alert("No compiler available for this language yet!");
       return;
   }
-
   window.open(url, "_blank");
 }
 
@@ -104,7 +109,7 @@ function updateDebuggingSteps(steps) {
   ul.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
 }
 
-// ✅ Update Algorithm
+// ✅ Update Algorithm Steps
 function updateAlgorithm(steps) {
   const ol = document.querySelector('#algorithm .algorithm-list');
   ol.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
@@ -137,7 +142,7 @@ function retryTranslate() {
   handleTranslate();
 }
 
-// ✅ Start Loading Animation
+// ✅ Start Loading
 function startLoading() {
   const overlay = document.getElementById('loadingOverlay');
   const progress = document.getElementById('progressBar');
@@ -178,14 +183,14 @@ function startLoading() {
   }, 1000);
 }
 
-// ✅ Stop Loading Animation
+// ✅ Stop Loading
 function stopLoading() {
   document.getElementById('loadingOverlay').style.display = 'none';
   if (progressInterval) clearInterval(progressInterval);
   if (countdownTimer) clearInterval(countdownTimer);
 }
 
-// ✅ Copy to Clipboard
+// ✅ Copy Code
 function copyToClipboard() {
   const codeBlock = document.getElementById('translatedCodeBlock');
   const code = codeBlock.innerText.trim();
@@ -204,7 +209,7 @@ function toggleCollapse(id) {
   document.getElementById(id).classList.toggle('collapsed');
 }
 
-// ✅ Line Counter for Java Input
+// ✅ Line Count Tracker
 const javaCodeInput = document.getElementById('javaCode');
 const lineCounter = document.getElementById('lineCounter');
 
@@ -225,5 +230,5 @@ langOptions.forEach(option => {
   });
 });
 
-// Attach retry button
+// ✅ Retry Icon (Reload Button)
 document.querySelector('.retry-icon').addEventListener('click', handleTranslate);
