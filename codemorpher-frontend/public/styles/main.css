@@ -147,16 +147,16 @@ header {
 }
 
 .retry-icon::before {
-  top: 3px;
-  right: 3px;
+  top: 4px;
+  right: 4px;
   border-bottom: none;
   border-left: none;
   transform: rotate(-45deg);
 }
 
 .retry-icon::after {
-  bottom: 3px;
-  left: 3px;
+  bottom: 4px;
+  left: 4px;
   border-top: none;
   border-right: none;
   transform: rotate(-45deg);
