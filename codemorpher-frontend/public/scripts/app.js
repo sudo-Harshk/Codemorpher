@@ -18,35 +18,71 @@ function handleTranslate() {
 
   fetch('https://codemorpher-backend.onrender.com/translate', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ javaCode, targetLanguage })
   })
-    .then(response => response.json())
-    .then(data => {
-      stopLoading();
+  .then(response => response.json())
+  .then(data => {
+    stopLoading();
 
-      if (data.error) {
-        showError(data.message || "Something went wrong.");
-        return;
-      }
+    if (data.error) {
+      showError(data.message || "Something went wrong.");
+      return;
+    }
 
-      updateTranslatedCode(data.translatedCode);
-      updateDebuggingSteps(data.debuggingSteps);
-      updateAlgorithm(data.algorithm);
-    })
-    .catch(err => {
-      stopLoading();
-      showError("Network error or server unreachable.");
-      console.error(err);
-    });
+    updateTranslatedCode(data.translatedCode, targetLanguage);
+    updateDebuggingSteps(data.debuggingSteps);
+    updateAlgorithm(data.algorithm);
+  })
+  .catch(err => {
+    stopLoading();
+    showError("Network error or server unreachable.");
+    console.error(err);
+  });
 }
 
 // Update Translated Code
-function updateTranslatedCode(lines) {
+function updateTranslatedCode(lines, language) {
   const pre = document.querySelector('#translatedCode pre');
   pre.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
+
+  // ✅ Add "Run Code" button dynamically
+  const buttonsContainer = document.querySelector('#translatedCode .buttons');
+  buttonsContainer.innerHTML = `
+    <button onclick="copyToClipboard()">Copy to Clipboard</button>
+    <button onclick="openCompiler('${language}')">Run Code</button>
+  `;
+}
+
+// Open respective online compiler
+function openCompiler(language) {
+  let url = "";
+
+  switch (language.toLowerCase()) {
+    case "python":
+      url = "https://www.programiz.com/python-programming/online-compiler/";
+      break;
+    case "javascript":
+      url = "https://playcode.io/";
+      break;
+    case "c":
+      url = "https://www.onlinegdb.com/online_c_compiler";
+      break;
+    case "cpp":
+      url = "https://www.onlinegdb.com/online_c++_compiler";
+      break;
+    case "csharp":
+      url = "https://dotnetfiddle.net/";
+      break;
+    case "typescript":
+      url = "https://www.typescriptlang.org/play";
+      break;
+    default:
+      alert("No compiler available for this language yet!");
+      return;
+  }
+
+  window.open(url, "_blank");
 }
 
 // Update Debugging Steps
@@ -88,7 +124,7 @@ function retryTranslate() {
   handleTranslate(); 
 }
 
-// Start Loading Animation + Estimated Time Countdown
+// Start Loading Animation + Estimated Countdown
 function startLoading() {
   const overlay = document.getElementById('loadingOverlay');
   const progress = document.getElementById('progressBar');
@@ -103,10 +139,8 @@ function startLoading() {
     "Java and JavaScript are not the same!"
   ];
 
-  // Show initial random fun fact
   fact.textContent = `Fun Fact: ${facts[Math.floor(Math.random() * facts.length)]}`;
 
-  // Animate progress bar
   let width = 0;
   if (progressInterval) clearInterval(progressInterval);
   progress.style.width = '0%';
@@ -119,8 +153,7 @@ function startLoading() {
     }
   }, 200);
 
-  // Start Estimated Countdown
-  let estimatedTime = 12; // seconds
+  let estimatedTime = 12;
   if (countdownTimer) clearInterval(countdownTimer);
   countdownTimer = setInterval(() => {
     if (estimatedTime > 0) {
@@ -132,12 +165,26 @@ function startLoading() {
   }, 1000);
 }
 
-// Stop Loading Animation and Clear Timers
+// Stop Loading Animation
 function stopLoading() {
   document.getElementById('loadingOverlay').style.display = 'none';
   
   if (progressInterval) clearInterval(progressInterval);
   if (countdownTimer) clearInterval(countdownTimer);
+}
+
+// ✅ Improved Copy To Clipboard
+function copyToClipboard() {
+  const codeBlock = document.querySelector('#translatedCode pre');
+  const code = codeBlock.innerText.trim();
+
+  navigator.clipboard.writeText(code)
+    .then(() => {
+      alert('✅ Code copied to clipboard!');
+    })
+    .catch(err => {
+      console.error('❌ Failed to copy text: ', err);
+    });
 }
 
 // Attach retry icon (top right corner reload icon)
@@ -146,12 +193,6 @@ document.querySelector('.retry-icon').addEventListener('click', handleTranslate)
 // Collapse output sections
 function toggleCollapse(id) {
   document.getElementById(id).classList.toggle('collapsed');
-}
-
-// Copy Translated Code to Clipboard
-function copyToClipboard() {
-  const code = document.querySelector('#translatedCode pre').textContent;
-  navigator.clipboard.writeText(code).then(() => alert('Copied to clipboard!'));
 }
 
 // Real-time Line Count Tracker
@@ -165,7 +206,7 @@ function updateLineCount() {
 javaCodeInput.addEventListener('input', updateLineCount);
 window.addEventListener('DOMContentLoaded', updateLineCount);
 
-// Language Selection (Icons for Target Language)
+// Language Selection (Icons)
 const langOptions = document.querySelectorAll('.lang-option');
 langOptions.forEach(option => {
   option.addEventListener('click', () => {
@@ -174,37 +215,3 @@ langOptions.forEach(option => {
     document.getElementById('targetLanguage').value = option.getAttribute('data-value');
   });
 });
-
-function runCode() {
-  const selectedLang = document.getElementById('targetLanguage').value;
-
-  let compilerUrl = '';
-  switch (selectedLang) {
-    case 'javascript':
-      compilerUrl = 'https://onecompiler.com/javascript';
-      break;
-    case 'python':
-      compilerUrl = 'https://onecompiler.com/python';
-      break;
-    case 'c':
-      compilerUrl = 'https://onecompiler.com/c';
-      break;
-    case 'cpp':
-      compilerUrl = 'https://onecompiler.com/cpp';
-      break;
-    case 'csharp':
-      compilerUrl = 'https://onecompiler.com/csharp';
-      break;
-    case 'typescript':
-      compilerUrl = 'https://onecompiler.com/typescript';
-      break;
-    default:
-      alert('Selected language is not supported yet.');
-      return;
-  }
-
-  if (compilerUrl) {
-    window.open(compilerUrl, '_blank'); 
-  }
-}
-
