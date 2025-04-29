@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="./favicon.png" type="image/png">
     <title>Codemorpher</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
@@ -26,7 +26,7 @@
             System.out.println("CodeMorpher");
         }
     }
-    </textarea>
+      </textarea>
     
       <div class="line-count" id="lineCounter">Lines: 5</div>
 
@@ -62,11 +62,7 @@
         </div>
       </div>
       
-      
-      <!-- Hidden input for selected language -->
       <input type="hidden" id="targetLanguage" value="javascript">
-      
-
       <button id="translateButton">Translate</button>
     </div>
 
@@ -79,6 +75,7 @@
           <pre>// Translation will appear here...</pre>
           <div class="buttons">
             <button onclick="copyToClipboard()">Copy to Clipboard</button>
+            <button id="runButton">Run Code</button> <!-- ✅ Added Run Code button -->
           </div>
         </div>
       </div>
