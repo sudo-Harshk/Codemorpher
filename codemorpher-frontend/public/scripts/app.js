@@ -94,7 +94,7 @@ function runCode(language) {
       url = "https://dotnetfiddle.net/";
       break;
     case "php":
-      url = "https://www.onlinegdb.com/online_php_compiler";
+      url = "https://www.onlinegdb.com/online_php_interpreter";
       break;
     default:
       alert("No compiler available for this language yet!");
