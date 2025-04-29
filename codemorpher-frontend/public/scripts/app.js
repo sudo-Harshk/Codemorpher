@@ -41,12 +41,17 @@ function handleTranslate() {
   });
 }
 
-// Update Translated Code
+// ✅ Update Translated Code
 function updateTranslatedCode(lines, language) {
-  const pre = document.querySelector('#translatedCode pre');
-  pre.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
+  const codeBlock = document.getElementById('translatedCodeBlock'); // <code> block inside <pre>
 
-  // Add Copy and Run buttons dynamically
+  // Set class dynamically for Prism.js
+  codeBlock.className = `language-${language.toLowerCase()}`;
+
+  codeBlock.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
+
+  Prism.highlightElement(codeBlock); // ✅ Highlight after updating
+
   const buttonsContainer = document.querySelector('#translatedCode .buttons');
   buttonsContainer.innerHTML = `
     <button onclick="copyToClipboard()">Copy to Clipboard</button>
@@ -54,9 +59,9 @@ function updateTranslatedCode(lines, language) {
   `;
 }
 
-// Run Code (Auto copy + open compiler)
+// ✅ Open Online Compiler
 function runCode(language) {
-  const codeBlock = document.querySelector('#translatedCode pre');
+  const codeBlock = document.getElementById('translatedCodeBlock');
   const code = codeBlock.innerText.trim();
 
   if (!code) {
@@ -65,12 +70,8 @@ function runCode(language) {
   }
 
   navigator.clipboard.writeText(code)
-    .then(() => {
-      console.log('Code copied to clipboard automatically.');
-    })
-    .catch(err => {
-      console.error('Failed to copy code:', err);
-    });
+    .then(() => console.log('Code copied to clipboard.'))
+    .catch(err => console.error('Failed to copy:', err));
 
   let url = "";
   switch (language.toLowerCase()) {
@@ -96,23 +97,22 @@ function runCode(language) {
       alert("No compiler available for this language yet!");
       return;
   }
-
   window.open(url, "_blank");
 }
 
-// Update Debugging Steps
+// ✅ Debugging Steps
 function updateDebuggingSteps(steps) {
   const ul = document.querySelector('#debuggingSteps .debug-list');
   ul.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
 }
 
-// Update Algorithm Steps
+// ✅ Algorithm Steps
 function updateAlgorithm(steps) {
   const ol = document.querySelector('#algorithm .algorithm-list');
   ol.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
 }
 
-// Escape HTML safely
+// ✅ Escape HTML
 function escapeHTML(text) {
   return text.replace(/[&<>'"]/g, c => ({
     '&': '&amp;',
@@ -123,7 +123,7 @@ function escapeHTML(text) {
   }[c]));
 }
 
-// Show Error
+// ✅ Show Error
 function showError(message) {
   const content = document.getElementById('loadingContent');
   content.innerHTML = `
@@ -139,7 +139,7 @@ function retryTranslate() {
   handleTranslate();
 }
 
-// Start Loading Animation + Estimated Countdown
+// ✅ Start Loading
 function startLoading() {
   const overlay = document.getElementById('loadingOverlay');
   const progress = document.getElementById('progressBar');
@@ -180,16 +180,16 @@ function startLoading() {
   }, 1000);
 }
 
-// Stop Loading Animation
+// ✅ Stop Loading
 function stopLoading() {
   document.getElementById('loadingOverlay').style.display = 'none';
   if (progressInterval) clearInterval(progressInterval);
   if (countdownTimer) clearInterval(countdownTimer);
 }
 
-// Copy Translated Code
+// ✅ Copy Translated Code
 function copyToClipboard() {
-  const codeBlock = document.querySelector('#translatedCode pre');
+  const codeBlock = document.getElementById('translatedCodeBlock');
   const code = codeBlock.innerText.trim();
 
   navigator.clipboard.writeText(code)
@@ -197,19 +197,19 @@ function copyToClipboard() {
       alert('✅ Code copied to clipboard!');
     })
     .catch(err => {
-      console.error('❌ Failed to copy text: ', err);
+      console.error('❌ Failed to copy text:', err);
     });
 }
 
-// Attach retry icon (top right reload icon)
+// Attach retry icon click
 document.querySelector('.retry-icon').addEventListener('click', handleTranslate);
 
-// Collapse output sections
+// ✅ Collapse Output Sections
 function toggleCollapse(id) {
   document.getElementById(id).classList.toggle('collapsed');
 }
 
-// Real-time Line Count Tracker
+// ✅ Line Count Tracker
 const javaCodeInput = document.getElementById('javaCode');
 const lineCounter = document.getElementById('lineCounter');
 
@@ -220,7 +220,7 @@ function updateLineCount() {
 javaCodeInput.addEventListener('input', updateLineCount);
 window.addEventListener('DOMContentLoaded', updateLineCount);
 
-// Language Selection (Icons)
+// ✅ Language Selection
 const langOptions = document.querySelectorAll('.lang-option');
 langOptions.forEach(option => {
   option.addEventListener('click', () => {
