@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="./favicon.png" type="image/png">
-    <title>Codemorpher</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/styles/main.css">
-  </head>  
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" href="./favicon.png" type="image/png">
+  <title>Codemorpher</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/main.css">
+
+  <!-- ✅ Prism.js CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.css" rel="stylesheet"/>
+</head>
+
 <body>
   <header class="header-with-logo">
     <img src="./logo-black.png" alt="Codemorpher Logo" class="logo-icon">
     <span class="rowdies-regular">CodeMorpher</span>
   </header>
-  
+
   <div class="container">
     <div class="card input-card">
       <div class="input-header">
@@ -22,46 +26,41 @@
       </div>
 
       <textarea id="javaCode" placeholder="Enter your Java code here...">public class Main {
-        public static void main(String[] args) {
-            System.out.println("CodeMorpher");
-        }
+    public static void main(String[] args) {
+        System.out.println("CodeMorpher");
     }
+}
       </textarea>
-    
+
       <div class="line-count" id="lineCounter">Lines: 5</div>
 
       <div class="language-selection">
         <div class="lang-option selected" data-value="javascript">
-          <img src="https://img.icons8.com/color/144/javascript--v1.png" alt="JavaScript" class="lang-icon-small"><br>JavaScript
-          <div class="tick"></div> 
+          <img src="https://img.icons8.com/color/144/javascript--v1.png" alt="JavaScript"><br>JavaScript
+          <div class="tick"></div>
         </div>
-      
         <div class="lang-option" data-value="python">
-          <img src="https://img.icons8.com/color/144/python--v1.png" alt="Python" class="lang-icon-small"><br>Python
-          <div class="tick"></div> 
+          <img src="https://img.icons8.com/color/144/python--v1.png" alt="Python"><br>Python
+          <div class="tick"></div>
         </div>
-      
         <div class="lang-option" data-value="c">
-          <img src="https://img.icons8.com/fluency/144/c-programming.png" alt="C" class="lang-icon-small"><br>C
-          <div class="tick"></div> 
+          <img src="https://img.icons8.com/fluency/144/c-programming.png" alt="C"><br>C
+          <div class="tick"></div>
         </div>
-      
         <div class="lang-option" data-value="cpp">
-          <img src="https://img.icons8.com/color/144/c-plus-plus-logo.png" alt="C++" class="lang-icon-small"><br>C++
-          <div class="tick"></div> 
+          <img src="https://img.icons8.com/color/144/c-plus-plus-logo.png" alt="C++"><br>C++
+          <div class="tick"></div>
         </div>
-      
         <div class="lang-option" data-value="csharp">
-          <img src="https://img.icons8.com/fluency/144/c-sharp-logo.png" alt="C#" class="lang-icon-small"><br>C#
-          <div class="tick"></div> 
+          <img src="https://img.icons8.com/fluency/144/c-sharp-logo.png" alt="C#"><br>C#
+          <div class="tick"></div>
         </div>
-      
         <div class="lang-option" data-value="typescript">
-          <img src="https://img.icons8.com/fluency/144/typescript--v1.png" alt="TypeScript" class="lang-icon-small"><br>TypeScript
-          <div class="tick"></div> 
+          <img src="https://img.icons8.com/fluency/144/typescript--v1.png" alt="TypeScript"><br>TypeScript
+          <div class="tick"></div>
         </div>
       </div>
-      
+
       <input type="hidden" id="targetLanguage" value="javascript">
       <button id="translateButton">Translate</button>
     </div>
@@ -72,10 +71,10 @@
           Translated Code <div class="chevron"></div>
         </div>
         <div class="content">
-          <pre>// Translation will appear here...</pre>
+          <!-- ✅ Prism-highlighted code block -->
+          <pre><code id="translatedCodeBlock" class="language-javascript">// Translation will appear here...</code></pre>
           <div class="buttons">
             <button onclick="copyToClipboard()">Copy to Clipboard</button>
-            <button onclick="runCode()">Run Code</button> 
           </div>
         </div>
       </div>
@@ -85,7 +84,7 @@
           Debugging Steps <div class="chevron"></div>
         </div>
         <div class="content">
-          <ul class="debug-list"></ul> 
+          <ul class="debug-list"></ul>
         </div>
       </div>
 
@@ -94,7 +93,7 @@
           Algorithm <div class="chevron"></div>
         </div>
         <div class="content">
-          <ol class="algorithm-list"></ol> 
+          <ol class="algorithm-list"></ol>
         </div>
       </div>
     </div>
@@ -108,6 +107,16 @@
     </div>
   </div>
 
+  <!-- ✅ Prism.js Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
+
+  <!-- Your App Logic -->
   <script src="/scripts/app.js"></script>
 </body>
 </html>
