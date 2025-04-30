@@ -27,7 +27,7 @@ describe('Codemorpher - Run Button Feature', () => {
     cy.contains('Run Code').click();
 
     cy.get('@windowOpen').should('have.been.calledOnce');
-    cy.get('@windowOpen').should('have.been.calledWithMatch', /playcode\.io/); // ✅ Verify correct URL
+    cy.get('@windowOpen').should('have.been.calledWithMatch', /playcode\.io/); 
     cy.screenshot('run-button-clicked');
   });
 });
