@@ -14,17 +14,24 @@ describe('Codemorpher - Copy Feature', () => {
 
     cy.get('.lang-option[data-value="javascript"]').click();
 
+    cy.intercept('POST', 'https://codemorpher-backend.onrender.com/translate').as('translate');
     cy.get('#translateButton').click();
+    cy.wait('@translate', { timeout: 15000 });
 
-    cy.get('#translatedCodeBlock', { timeout: 10000 })
-      .should('not.contain.text', 'Translation will appear here...')
-      .and('not.be.empty');
+    cy.get('#translatedCodeBlock', { timeout: 15000 })
+      .invoke('text')
+      .should((text) => {
+        expect(text.trim()).to.not.eq('Translation will appear here...');
+        expect(text.trim().length).to.be.greaterThan(10);
+      });
+
+    cy.get('#loadingOverlay', { timeout: 15000 }).should('not.be.visible');
 
     cy.window().then((win) => {
       cy.stub(win, 'alert').as('alert');
     });
 
-    cy.contains('Copy to Clipboard').click();
+    cy.get('button[onclick="copyToClipboard()"]').click();
 
     cy.get('@alert').should('have.been.calledWith', '✅ Code copied to clipboard!');
 
