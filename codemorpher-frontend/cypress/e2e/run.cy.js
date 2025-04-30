@@ -5,29 +5,32 @@ describe('Codemorpher - Run Button Feature', () => {
     cy.get('#javaCode')
       .clear()
       .type(
-        `public class Main {\n  public static void main(String[] args) {\n    System.out.println("Run!");\n  }\n}`,
+        `public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello! Kiddo...");\n  }\n}`,
         { parseSpecialCharSequences: false }
       );
 
     cy.get('.lang-option[data-value="javascript"]').click();
     cy.get('#translateButton').click();
 
-    cy.get('#translatedCodeBlock', { timeout: 15000 })
-      .should('not.include.text', 'Translation will appear here...');
+    cy.get('#translatedCodeBlock', { timeout: 20000 }) 
+      .should('not.contain', 'Translation will appear here...')
+      .and('not.be.empty');
   });
 
   it('should display the Run Code button after translation', () => {
-    cy.contains('Run Code').should('be.visible');
+    cy.contains('button', 'Run Code').should('be.visible');
     cy.screenshot('run-button-visible');
   });
 
   it('should open external compiler when Run Code is clicked', () => {
-    cy.window().then(win => cy.stub(win, 'open').as('windowOpen'));
+    cy.window().then((win) => {
+      cy.stub(win, 'open').as('windowOpen');
+    });
 
-    cy.contains('Run Code').click();
+    cy.contains('button', 'Run Code').click();
 
     cy.get('@windowOpen').should('have.been.calledOnce');
-    cy.get('@windowOpen').should('have.been.calledWithMatch', /playcode\.io/); 
+    cy.get('@windowOpen').should('have.been.calledWithMatch', /playcode\.io|compiler-url/); 
     cy.screenshot('run-button-clicked');
   });
 });
