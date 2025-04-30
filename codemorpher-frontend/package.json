@@ -3,17 +3,20 @@
   "version": "1.0.0",
   "description": "Frontend for Codemorpher - Java to Any Language Translator",
   "scripts": {
-    "clean:reports": "rimraf cypress/reports",
-    "cypress:run": "cypress run --reporter mochawesome --reporter-options reportDir=cypress/reports/mocha,overwrite=false,html=false,json=true,screenshots=true",
-    "report:merge": "npx mochawesome-merge cypress/reports/mocha/*.json > cypress/reports/mochawesome.json",
+    "clean:reports": "rimraf cypress/reports cypress/screenshots && mkdirp cypress/reports",
+    "cypress:run": "cypress run --reporter mochawesome --reporter-options reportDir=cypress/reports/mocha,overwrite=false,html=false,json=true,includeScreenshots=true",
+    "report:merge": "npx mochawesome-merge \"cypress/reports/mocha/*.json\" > cypress/reports/mochawesome.json",
     "report:generate": "npx marge cypress/reports/mochawesome.json --reportDir cypress/reports --inline",
-    "test:report": "npm run clean:reports && npm run cypress:run && npm run report:merge && npm run report:generate && start cypress/reports/mochawesome.html"
+    "test": "npm run test:report",
+    "test:report": "npm run clean:reports && npm run cypress:run && npm run report:merge && npm run report:generate && start cypress/reports/mochawesome.html",
+    "cypress:open": "cypress open"
   },
   "devDependencies": {
     "cypress": "^14.3.2",
     "mochawesome": "^7.1.3",
     "mochawesome-merge": "^4.3.0",
     "mochawesome-report-generator": "^6.2.0",
+    "mkdirp": "^3.0.1",
     "rimraf": "^5.0.1"
   }
 }
