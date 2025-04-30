@@ -19,24 +19,34 @@ function handleTranslate() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ javaCode, targetLanguage })
   })
-  .then(response => response.json())
-  .then(data => {
-    stopLoading();
+    .then(response => response.json())
+    .then(data => {
+      stopLoading(); // Hide overlay first
 
-    if (data.error) {
-      showError(data.message || "Something went wrong.");
-      return;
-    }
+      if (data.error) {
+        showError(data.message || "Something went wrong.");
+        return;
+      }
 
-    updateTranslatedCode(data.translatedCode, targetLanguage);
-    updateDebuggingSteps(data.debuggingSteps);
-    updateAlgorithm(data.algorithm);
-  })
-  .catch(err => {
-    stopLoading();
-    showError("Network error or server unreachable.");
-    console.error(err);
-  });
+      if (data.fallback) {
+        // Handle fallback response explicitly
+        showError("Translation incomplete. Displaying fallback result.");
+        updateTranslatedCode([data.translatedCode], targetLanguage); // Use array for consistency
+        updateDebuggingSteps([data.debuggingSteps]);
+        updateAlgorithm([data.algorithm]);
+        return;
+      }
+
+      // Successful translation
+      updateTranslatedCode(data.translatedCode, targetLanguage);
+      updateDebuggingSteps(data.debuggingSteps);
+      updateAlgorithm(data.algorithm);
+    })
+    .catch(err => {
+      stopLoading();
+      showError("Network error or server unreachable.");
+      console.error(err);
+    });
 }
 
 function updateTranslatedCode(lines, language) {

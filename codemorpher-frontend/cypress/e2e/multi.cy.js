@@ -17,8 +17,12 @@ describe('Codemorpher - Multi-Language Translation Loop', () => {
       cy.get(`.lang-option[data-value="${lang}"]`).click();
       cy.get('#translateButton').click();
 
-      cy.get('#translatedCodeBlock', { timeout: 15000 }) 
-        .should('not.include.text', 'Translation will appear here...');
+      cy.get('#translatedCodeBlock', { timeout: 15000 })
+      .invoke('text')
+      .should((text) => {
+      expect(text.trim()).to.not.eq('Translation will appear here...');
+      expect(text.trim().length).to.be.greaterThan(10);
+      });
 
       cy.get('#translatedCodeBlock')
         .invoke('text')
