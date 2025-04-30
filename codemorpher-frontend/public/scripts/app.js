@@ -101,11 +101,13 @@ function runCode(language) {
 function updateDebuggingSteps(steps) {
   const ul = document.querySelector('#debuggingSteps .debug-list');
   ul.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
+  document.getElementById('debuggingSteps').classList.remove('collapsed'); // ✅ Auto-expand
 }
 
 function updateAlgorithm(steps) {
   const ol = document.querySelector('#algorithm .algorithm-list');
   ol.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
+  document.getElementById('algorithm').classList.remove('collapsed'); // ✅ Auto-expand
 }
 
 function escapeHTML(text) {
@@ -182,13 +184,39 @@ function copyToClipboard() {
   const codeBlock = document.getElementById('translatedCodeBlock');
   const code = codeBlock.innerText.trim();
 
-  navigator.clipboard.writeText(code)
-    .then(() => {
-      alert('✅ Code copied to clipboard!');
-    })
-    .catch(err => {
-      console.error('❌ Failed to copy text:', err);
-    });
+  if (!code) {
+    alert('Nothing to copy!');
+    return;
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code)
+      .then(() => {
+        alert('✅ Code copied to clipboard!');
+      })
+      .catch(err => {
+        console.error('❌ Clipboard API failed. Falling back.', err);
+        fallbackCopy(code);
+      });
+  } else {
+    fallbackCopy(code);
+  }
+}
+
+function fallbackCopy(text) {
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.position = "fixed";
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  try {
+    document.execCommand("copy");
+    alert("✅ Code copied (fallback)!");
+  } catch (err) {
+    alert("❌ Copy failed. Please do it manually.");
+  }
+  document.body.removeChild(textarea);
 }
 
 function toggleCollapse(id) {
