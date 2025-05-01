@@ -13,7 +13,7 @@ describe('Codemorpher - Translate Feature', () => {
     cy.get('#translateButton').click();
 
     cy.get('#translatedCodeBlock', { timeout: 15000 })
-      .should('not.contain.text', 'Translation will appear here...')
+      .should('not.contain.text', '// Translation will appear here...')
       .invoke('text')
       .should('include', 'console.log');
 
