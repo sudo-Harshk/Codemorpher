@@ -1,7 +1,7 @@
 {
   "name": "codemorpher-backend",
   "version": "1.0.0",
-  "main": "server.js", 
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,11 +13,15 @@
   "description": "",
   "dependencies": {
     "@google/genai": "^0.9.0",
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.8.4",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "file-type": "^16.5.3",
     "firebase-admin": "^13.3.0",
+    "mime-types": "^3.0.1",
+    "multer": "^1.4.5-lts.2",
     "openai": "^4.95.1"
   },
   "devDependencies": {

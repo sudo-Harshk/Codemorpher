@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const multer = require('multer');
+const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -8,6 +10,9 @@ const useOpenRouter = require('./translators/useOpenRouter');
 
 // 🔁 Firebase logging
 const { logTranslation, logError } = require('./firebase/logService');
+
+// 🧠 Image parsing
+const extractJavaCodeFromImage = require('./vision/geminiImageParser');
 
 app.use(cors());
 app.use(express.json());
@@ -48,7 +53,6 @@ app.post('/translate', async (req, res) => {
       return res.status(200).json(result);
     }
 
-    // ✅ Success
     await logTranslation(sessionId, { ...result, input }, 'success', 'openrouter');
     console.log(`✅ [${sessionId}] Translation complete.`);
     return res.json(result);
@@ -57,13 +61,45 @@ app.post('/translate', async (req, res) => {
     console.error(`❌ [${sessionId}] Translation failed: ${err.message}`);
     await logError(sessionId, javaCode, targetLanguage, err.message);
 
-    // 🚨 Hard error fallback response
     return res.status(200).json({
       translatedCode: '// Translation unavailable due to backend error.',
       debuggingSteps: '⚠️ OpenRouter could not provide debugging steps.',
       algorithm: '⚠️ Algorithm generation failed.',
       fallback: true
     });
+  }
+});
+
+// 📸 Image Upload Route
+const upload = multer({ dest: 'uploads/' });
+
+app.post('/upload', upload.single('image'), async (req, res) => {
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).json({ error: 'No image uploaded.' });
+  }
+
+  try {
+    const extractedCode = await extractJavaCodeFromImage(file.path);
+
+    // Cleanup uploaded file
+    fs.unlinkSync(file.path);
+
+    if (!extractedCode) {
+      return res.status(400).json({ error: 'No valid Java code found in image.' });
+    }
+
+    // 🔧 Clean backtick-wrapped code
+    const cleanCode = extractedCode
+      .replace(/```[\s\S]*?\n?/, '') 
+      .replace(/```$/, '')         
+      .trim();
+
+    res.json({ javaCode: cleanCode });
+  } catch (err) {
+    console.error('❌ Upload error:', err.message);
+    res.status(500).json({ error: 'Failed to process image.' });
   }
 });
 

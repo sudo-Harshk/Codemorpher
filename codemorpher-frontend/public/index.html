@@ -60,7 +60,11 @@
       </div>
 
       <input type="hidden" id="targetLanguage" value="javascript">
-      <button id="translateButton">Translate</button>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button id="translateButton" style="flex: 1 1 48%;">Translate</button>
+        <button id="uploadImageButton" style="flex: 1 1 48%;">Upload Image</button>
+      </div>
+      <input type="file" id="uploadInput" accept="image/*" style="display: none;" />
     </div>
 
     <div class="card output-card">
