@@ -10,7 +10,7 @@ document.getElementById('uploadInput').addEventListener('change', async (event) 
   const file = event.target.files[0];
   if (!file) return;
 
-  startLoading();
+  startLoading("🧠 Extracting Java code from image...");
 
   const formData = new FormData();
   formData.append('image', file);
@@ -177,12 +177,32 @@ function retryTranslate() {
   handleTranslate();
 }
 
-function startLoading() {
+function startLoading(customMessage = null) {
   const overlay = document.getElementById('loadingOverlay');
   const progress = document.getElementById('progressBar');
   const fact = document.getElementById('funFact');
   overlay.style.display = 'flex';
 
+  let width = 0;
+  if (progressInterval) clearInterval(progressInterval);
+  progress.style.width = '0%';
+
+  progressInterval = setInterval(() => {
+    if (width >= 100) {
+      clearInterval(progressInterval);
+    } else {
+      width += 2;
+      progress.style.width = width + '%';
+    }
+  }, 200);
+
+  // 🧠 If a custom static message is passed (for upload)
+  if (customMessage) {
+    fact.textContent = customMessage;
+    return;
+  }
+
+  // ⏳ Default: countdown for translation
   const facts = [
     "JavaScript was created in just 10 days!",
     "Python is named after Monty Python, not the snake!",
@@ -192,18 +212,6 @@ function startLoading() {
   ];
 
   fact.textContent = `Fun Fact: ${facts[Math.floor(Math.random() * facts.length)]}`;
-
-  let width = 0;
-  if (progressInterval) clearInterval(progressInterval);
-  progress.style.width = '0%';
-  progressInterval = setInterval(() => {
-    if (width >= 100) {
-      clearInterval(progressInterval);
-    } else {
-      width += 2;
-      progress.style.width = width + '%';
-    }
-  }, 200);
 
   let estimatedTime = 12;
   if (countdownTimer) clearInterval(countdownTimer);
@@ -216,6 +224,7 @@ function startLoading() {
     }
   }, 1000);
 }
+
 
 function stopLoading() {
   document.getElementById('loadingOverlay').style.display = 'none';
