@@ -2,6 +2,41 @@ let progressInterval = null;
 let countdownTimer = null;
 
 document.getElementById('translateButton').addEventListener('click', handleTranslate);
+document.getElementById('uploadImageButton').addEventListener('click', () => {
+  document.getElementById('uploadInput').click();
+});
+
+document.getElementById('uploadInput').addEventListener('change', async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  startLoading();
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  try {
+    const response = await fetch('https://codemorpher-backend.onrender.com/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await response.json();
+    stopLoading();
+
+    if (data.error) {
+      showError(data.error || "Could not extract Java code.");
+      return;
+    }
+
+    document.getElementById('javaCode').value = data.javaCode;
+    updateLineCount();
+  } catch (err) {
+    stopLoading();
+    showError("Image upload failed or server error.");
+    console.error(err);
+  }
+});
 
 function handleTranslate() {
   const javaCode = document.getElementById('javaCode').value.trim();
@@ -21,7 +56,7 @@ function handleTranslate() {
   })
     .then(response => response.json())
     .then(data => {
-      stopLoading(); // Hide overlay first
+      stopLoading();
 
       if (data.error) {
         showError(data.message || "Something went wrong.");
@@ -29,15 +64,13 @@ function handleTranslate() {
       }
 
       if (data.fallback) {
-        // Handle fallback response explicitly
         showError("Translation incomplete. Displaying fallback result.");
-        updateTranslatedCode([data.translatedCode], targetLanguage); // Use array for consistency
+        updateTranslatedCode([data.translatedCode], targetLanguage);
         updateDebuggingSteps([data.debuggingSteps]);
         updateAlgorithm([data.algorithm]);
         return;
       }
 
-      // Successful translation
       updateTranslatedCode(data.translatedCode, targetLanguage);
       updateDebuggingSteps(data.debuggingSteps);
       updateAlgorithm(data.algorithm);
@@ -111,13 +144,13 @@ function runCode(language) {
 function updateDebuggingSteps(steps) {
   const ul = document.querySelector('#debuggingSteps .debug-list');
   ul.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
-  document.getElementById('debuggingSteps').classList.remove('collapsed'); // ✅ Auto-expand
+  document.getElementById('debuggingSteps').classList.remove('collapsed');
 }
 
 function updateAlgorithm(steps) {
   const ol = document.querySelector('#algorithm .algorithm-list');
   ol.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
-  document.getElementById('algorithm').classList.remove('collapsed'); // ✅ Auto-expand
+  document.getElementById('algorithm').classList.remove('collapsed');
 }
 
 function escapeHTML(text) {
