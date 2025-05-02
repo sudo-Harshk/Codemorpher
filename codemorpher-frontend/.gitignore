@@ -6,6 +6,7 @@ cypress/screenshots/
 cypress/videos/
 cypress/reports/
 cypress/downloads/
+cypress/fixtures
 
 # System files
 .DS_Store
