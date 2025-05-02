@@ -40,27 +40,32 @@ Codemorpher is a full-stack web application that allows users to input Java code
 ```
 CODEMORPHER/
 ├── codemorpher-backend/
-│   ├── firebase/               # Firebase logging utilities
-│   ├── node_modules/           # Backend dependencies
-│   ├── translators/            # GPT/OpenRouter wrappers
-│   │   └── useOpenRouter.js    # OpenRouter integration
-│   ├── .env                    # Environment variables
-│   ├── .gitignore              # Git ignore file
-│   ├── package-lock.json       # Dependency lock file
-│   ├── package.json            # Backend dependencies & scripts
-│   └── server.js               # Express server
+│   ├── firebase/                   # Firebase logging utilities
+│   ├── node_modules/               # Backend dependencies
+│   ├── translators/                # GPT/OpenRouter wrappers
+│   │   └── useOpenRouter.js        # OpenRouter integration
+│   ├── uploads/                    # Uploaded files storage
+│   ├── vision/                     # Vision-related functionality
+│   │   └── geminiImageParser.js    # Gemini image processing integration
+│   ├── .env                        # Environment variables
+│   ├── .gitignore                  # Git ignore file
+│   ├── package-lock.json           # Dependency lock file
+│   ├── package.json                # Backend dependencies & scripts
+│   └── server.js                   # Express server
 │
 ├── codemorpher-frontend/
-│   ├── cypress/                # Cypress E2E tests & support
-│   ├── node_modules/           # Frontend dependencies
-│   ├── public/                 # Static assets
-│   ├── .gitignore              # Git ignore file
-│   ├── cypress.config.js       # Cypress configuration
-│   ├── package-lock.json       # Dependency lock file
-│   ├── package.json            # Frontend dependencies & scripts
-│   └── preview.html            # Preview HTML file (likely for testing)
+│   ├── cypress/                    # Cypress E2E tests & support
+│   ├── node_modules/               # Frontend dependencies
+│   ├── public/                     # Static assets
+│   ├── test-images/                # Images used for testing
+│   ├── .gitignore                  # Git ignore file
+│   ├── cypress.config.js           # Cypress configuration
+│   ├── package-lock.json           # Dependency lock file
+│   ├── package.json                # Frontend dependencies & scripts
+│   ├── preview.html                # Preview HTML file
+│   └── README.md                   # Frontend documentation
 │
-└── README.md                   # Project documentation
+└── README.md                       # Project documentation
 ```
 
 ## 🧪 Running the Test Suite & Generating Reports
