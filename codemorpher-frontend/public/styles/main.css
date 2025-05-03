@@ -78,7 +78,7 @@ header {
 }
 
 .logo-icon {
-  width: 50px; /* Bigger logo now */
+  width: 50px;
   height: 50px;
   object-fit: contain;
 }
@@ -90,6 +90,16 @@ header {
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
+  align-items: flex-start;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* Distribute cards evenly on larger screens */
+@media (min-width: 1200px) {
+  .container {
+    justify-content: space-between;
+  }
 }
 
 .card {
@@ -98,6 +108,7 @@ header {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   transition: all 0.3s ease;
+  margin-bottom: 20px; /* Add default vertical spacing between cards */
 }
 
 .card:hover {
@@ -106,15 +117,26 @@ header {
 }
 
 .input-card {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 300px;
-  position: relative;
+  max-width: min(1000px, 48vw); /* Increased for larger screens */
+  padding: 20px !important;
+  align-self: flex-start;
 }
 
 .output-card {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 300px;
+  max-width: min(1000px, 48vw); /* Increased for larger screens */
   margin-top: 20px;
+}
+
+/* For very large screens, allow cards to grow further */
+@media (min-width: 1600px) {
+  .input-card,
+  .output-card {
+    max-width: min(1200px, 48vw);
+  }
 }
 
 /* ---------------------------------------------------
@@ -179,7 +201,6 @@ header {
   }
 }
 
-
 label {
   font-size: 16px;
   margin-bottom: 10px;
@@ -221,6 +242,14 @@ button {
   font-size: 14px;
 }
 
+/* Scale buttons on larger screens */
+@media (min-width: 1200px) {
+  button {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+}
+
 button:hover {
   background-color: #2E7D32;
 }
@@ -230,22 +259,23 @@ button:hover {
 --------------------------------------------------- */
 .language-selection {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: 12px;
-  margin: 20px 0;
+  grid-template-columns: repeat(3, 1fr);  
+  gap: 8px;
+  margin: 10px 0 25px 0;
 }
 
 .lang-option {
   background: #ffffff;
   border: 2px solid transparent;
   border-radius: 16px;
-  padding: 10px;
+  padding: 12px;
+  touch-action: manipulation; 
   cursor: pointer;
   font-size: 12px;
   text-align: center;
   transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  min-width: 80px;
+  min-width: 70px;
   position: relative;
   -webkit-tap-highlight-color: transparent;
 }
@@ -297,6 +327,34 @@ button:hover {
   animation: popIn 0.4s ease forwards;
 }
 
+/* Scale down language options on very small screens */
+@media (max-width: 400px) {
+  .language-selection {
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  }
+
+  .lang-option {
+    min-width: 60px;
+    padding: 8px;
+    font-size: 10px;
+  }
+
+  .lang-option img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .tick {
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+  }
+
+  .tick::after {
+    font-size: 8px;
+  }
+}
+
 /* ---------------------------------------------------
    7. Output Section
 --------------------------------------------------- */
@@ -314,13 +372,15 @@ button:hover {
 
 .output-section .content ul,
 .output-section .content ol {
-  padding-left: 20px; 
-  margin: 0; 
+  padding-left: 20px;
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .output-section .content li {
-  margin-bottom: 8px; 
-  line-height: 1.6; 
+  margin-bottom: 8px;
+  line-height: 1.6;
 }
 
 .output-section .header {
@@ -359,6 +419,8 @@ pre {
   font-family: 'Fira Code', monospace;
   font-size: 14px;
   white-space: pre-wrap;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .output-section .buttons {
@@ -366,25 +428,25 @@ pre {
   display: flex;
   gap: 10px;
   justify-content: flex-start;
-  flex-wrap: wrap; 
+  flex-wrap: wrap;
 }
 
 .output-section .buttons button {
-  flex: 1 1 auto; 
-  min-width: 140px; 
+  flex: 1 1 45%;
+  min-width: 120px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .output-section .buttons {
-    flex-direction: column; 
-    gap: 8px; 
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .output-section .buttons button {
-    width: 100%; 
+    width: 100%;
+    min-width: unset;
   }
 }
-
 
 /* ---------------------------------------------------
    8. Loading Overlay
@@ -448,6 +510,7 @@ pre {
   font-size: 16px;
   color: #FF7043;
   margin-bottom: 15px;
+  min-height: 20px;
 }
 
 /* ---------------------------------------------------
@@ -464,28 +527,36 @@ pre {
     padding: 16px;
     border-radius: 12px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px; /* Increase spacing between cards on mobile */
   }
 
-  .input-card,
+  .input-card {
+    align-self: flex-start;
+    max-width: 100%;
+    padding: 16px !important;
+  }
+
   .output-card {
-    width: 100%;
+    flex: 1 1 auto;
+    max-width: 100%;
   }
 
   textarea {
-    height: 300px;
-    font-size: 15px;
-    padding: 14px;
+    height: 180px;           
+    font-size: 13px;
+    line-height: 1.4;
   }
 
   button {
     width: 100%;
     height: 48px;
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .language-selection {
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
+    margin: 10px 0 20px 0; /* Add more space below language selection */
   }
 
   .lang-option img {
@@ -495,6 +566,51 @@ pre {
 
   .tick::after {
     font-size: 9px;
+  }
+
+  .button-group {
+    gap: 15px; /* Increase spacing between action buttons on mobile */
+  }
+}
+
+/* Stack buttons on smaller screens */
+@media (max-width: 900px) {
+  .button-group {
+    flex-direction: column !important;
+    gap: 15px !important; /* Ensure consistent spacing */
+  }
+
+  .button-group button {
+    flex: 1 1 100% !important;
+    min-width: unset !important;
+    width: 100% !important;
+  }
+}
+
+/* Fine-tune for very small screens like iQOO (~412px) */
+@media (max-width: 414px) {
+  .card {
+    margin-bottom: 35px; /* Further increase spacing for better separation */
+  }
+
+  .language-selection {
+    gap: 8px;
+    margin: 10px 0 25px 0; /* More space below language selection */
+  }
+
+  .lang-option {
+    min-width: 60px;
+    padding: 8px;
+    font-size: 10px;
+  }
+
+  .lang-option img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .button-group {
+    gap: 20px; /* More spacing between action buttons */
   }
 }
 
@@ -526,7 +642,63 @@ pre {
 }
 
 /* ---------------------------------------------------
-    11. New: Run Code Button Styling
+   11. Button Group and Camera Modal
+--------------------------------------------------- */
+.button-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.button-group button {
+  flex: 1 1 30%;
+  min-width: 100px;
+}
+
+.camera-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #FFFFFF;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  text-align: center;
+  max-width: 90%;
+  width: 400px;
+  max-height: 90vh;       
+  overflow-y: auto;
+}
+
+.camera-modal video {
+  width: 100%;
+  max-width: 350px;
+  height: auto;
+  border-radius: 5px;
+  object-fit: cover;      
+  aspect-ratio: 4 / 3;    
+}
+
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  min-width: 100px;
+  padding: 14px;
+  font-size: 16px; 
+}
+
+/* ---------------------------------------------------
+   12. Run Code Button Styling
 --------------------------------------------------- */
 .output-section .buttons {
   margin-top: 20px;
@@ -537,11 +709,16 @@ pre {
 }
 
 .output-section .buttons button {
-  flex: 1 1 45%; 
+  flex: 1 1 45%;
   min-width: 120px;
 }
 
 @media (max-width: 768px) {
+  .button-group {
+    flex-direction: column;
+    gap: 15px;
+  }
+    
   .output-section .buttons {
     flex-direction: column;
     align-items: stretch;
@@ -552,7 +729,6 @@ pre {
     min-width: unset;
   }
 }
-
 
 .copy-button, .run-button {
   background-color: #26A69A;
@@ -568,3 +744,4 @@ pre {
 .copy-button:hover, .run-button:hover {
   background-color: #2E7D32;
 }
+

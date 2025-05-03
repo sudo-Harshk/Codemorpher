@@ -1,6 +1,20 @@
 let progressInterval = null;
 let countdownTimer = null;
+let stream = null; // For camera stream
+let pendingImageBlob = null; // Store the image blob temporarily for confirmation
 
+// DOM Elements for Camera and Confirmation
+const cameraButton = document.getElementById('cameraButton');
+const cameraModal = document.getElementById('cameraModal');
+const cameraPreview = document.getElementById('cameraPreview');
+const imagePreview = document.getElementById('imagePreview');
+const captureButton = document.getElementById('captureButton');
+const closeCameraButton = document.getElementById('closeCameraButton');
+
+// Use the Render backend URL
+const BACKEND_URL = 'https://codemorpher-backend.onrender.com';
+
+// Existing event listeners
 document.getElementById('translateButton').addEventListener('click', handleTranslate);
 document.getElementById('uploadImageButton').addEventListener('click', () => {
   document.getElementById('uploadInput').click();
@@ -10,34 +24,182 @@ document.getElementById('uploadInput').addEventListener('change', async (event) 
   const file = event.target.files[0];
   if (!file) return;
 
-  startLoading("🧠 Extracting Java code from image...");
+  // Show confirmation modal with image preview
+  pendingImageBlob = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    cameraPreview.style.display = 'none'; // Hide video
+    imagePreview.style.display = 'block'; // Show image
+    imagePreview.src = e.target.result; // Show the uploaded image
+    cameraModal.style.display = 'block';
+    updateModalForConfirmation();
+  };
+  reader.readAsDataURL(file);
+});
 
-  const formData = new FormData();
-  formData.append('image', file);
-
+// Camera functionality
+cameraButton.addEventListener('click', async () => {
   try {
-    const response = await fetch('https://codemorpher-backend.onrender.com/upload', {
-      method: 'POST',
-      body: formData
-    });
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
 
-    const data = await response.json();
-    stopLoading();
+    // 🔧 Set safe mobile attributes before playing stream
+    cameraPreview.setAttribute("muted", "");
+    cameraPreview.setAttribute("autoplay", "");
+    cameraPreview.setAttribute("playsinline", "");
 
-    if (data.error) {
-      showError(data.error || "Could not extract Java code.");
-      return;
-    }
-
-    document.getElementById('javaCode').value = data.javaCode;
-    updateLineCount();
+    cameraPreview.srcObject = stream;
+    cameraPreview.style.display = 'block';
+    imagePreview.style.display = 'none';
+    imagePreview.src = '';
+    cameraModal.style.display = 'block';
+    updateModalForCamera();
   } catch (err) {
-    stopLoading();
-    showError("Image upload failed or server error.");
-    console.error(err);
+    console.error('Error accessing camera:', err);
+    let errorMessage = 'Error accessing camera. Please check permissions.';
+    if (err.name === 'NotAllowedError') {
+      errorMessage = 'Camera access denied. Please allow camera permissions in your browser settings.';
+    } else if (err.name === 'NotSecureError') {
+      errorMessage = 'Camera access requires a secure connection (HTTPS). Please use HTTPS or test on localhost.';
+    } else if (err.name === 'NotFoundError') {
+      errorMessage = 'No camera found on this device.';
+    }
+    showError(errorMessage);
   }
 });
 
+
+captureButton.addEventListener('click', async () => {
+  // If in confirmation mode, this button acts as "Yes"
+  if (captureButton.textContent === 'Yes') {
+    cameraModal.style.display = 'none';
+    processImage(pendingImageBlob);
+    pendingImageBlob = null;
+    return;
+  }
+
+  // Otherwise, capture the photo
+  const canvas = document.createElement('canvas');
+  canvas.width = cameraPreview.videoWidth;
+  canvas.height = cameraPreview.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(cameraPreview, 0, 0);
+
+  // Convert canvas to blob
+  canvas.toBlob((blob) => {
+    // Stop the camera stream
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+    }
+
+    // Show confirmation modal with image preview
+    pendingImageBlob = blob;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      cameraPreview.srcObject = null; // Clear the stream
+      cameraPreview.style.display = 'none'; // Hide video
+      imagePreview.style.display = 'block'; // Show image
+      imagePreview.src = e.target.result; // Show the captured image
+      updateModalForConfirmation();
+    };
+    reader.readAsDataURL(blob);
+  }, 'image/jpeg');
+});
+
+closeCameraButton.addEventListener('click', () => {
+  // If in confirmation mode, this button acts as "No"
+  if (closeCameraButton.textContent === 'No') {
+    cameraModal.style.display = 'none';
+    showError('Image not processed. Please try an image containing code.');
+    pendingImageBlob = null;
+    return;
+  }
+
+  // Otherwise, close the camera
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
+  cameraModal.style.display = 'none';
+});
+
+// Helper to update modal for camera mode
+function updateModalForCamera() {
+  captureButton.textContent = 'Capture';
+  closeCameraButton.textContent = 'Close';
+  const confirmationMessage = cameraModal.querySelector('.confirmation-message');
+  if (confirmationMessage) confirmationMessage.style.display = 'none';
+}
+
+// Helper to update modal for confirmation mode
+function updateModalForConfirmation() {
+  captureButton.textContent = 'Yes';
+  closeCameraButton.textContent = 'No';
+  // Add a message above the buttons
+  let confirmationMessage = cameraModal.querySelector('.confirmation-message');
+  if (!confirmationMessage) {
+    confirmationMessage = document.createElement('p');
+    confirmationMessage.className = 'confirmation-message';
+    confirmationMessage.textContent = 'Does this image contain code?';
+    confirmationMessage.style.textAlign = 'center';
+    confirmationMessage.style.marginBottom = '10px';
+    cameraModal.insertBefore(confirmationMessage, captureButton.parentElement);
+  } else {
+    confirmationMessage.style.display = 'block';
+  }
+}
+
+// Utility function to delay execution
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Process the image after confirmation with retry logic
+async function processImage(blob) {
+  startLoading("🧠 Extracting Java code from image...");
+
+  const formData = new FormData();
+  formData.append('image', blob, 'image.jpg');
+
+  const maxRetries = 3;
+  let attempt = 1;
+
+  while (attempt <= maxRetries) {
+    try {
+      const response = await fetch(`${BACKEND_URL}/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      stopLoading();
+
+      if (data.error) {
+        // If the backend provides extracted text, include it in the error message
+        if (data.extractedText) {
+          showError(`${data.error} Extracted text: "${data.extractedText.slice(0, 100)}${data.extractedText.length > 100 ? '...' : ''}"`);
+        } else {
+          showError(data.error || "Could not extract Java code.");
+        }
+        return;
+      }
+
+      document.getElementById('javaCode').value = data.javaCode;
+      updateLineCount();
+      return; // Success, exit the function
+    } catch (err) {
+      if (attempt === maxRetries) {
+        stopLoading();
+        showError(err.message.includes('Failed to fetch') ? "Cannot connect to the server. Please check if the backend is running." : "Image upload failed or server error.");
+        console.error(err);
+        return;
+      }
+      console.warn(`Attempt ${attempt} failed. Retrying in 2 seconds...`);
+      await delay(2000); // Wait 2 seconds before retrying
+      attempt++;
+    }
+  }
+}
+
+// Existing functions
 function handleTranslate() {
   const javaCode = document.getElementById('javaCode').value.trim();
   const targetLanguage = document.getElementById('targetLanguage').value;
@@ -49,7 +211,7 @@ function handleTranslate() {
 
   startLoading();
 
-  fetch('https://codemorpher-backend.onrender.com/translate', {
+  fetch(`${BACKEND_URL}/translate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ javaCode, targetLanguage })
@@ -77,7 +239,7 @@ function handleTranslate() {
     })
     .catch(err => {
       stopLoading();
-      showError("Network error or server unreachable.");
+      showError(err.message.includes('Failed to fetch') ? "Cannot connect to the server. Please check if the backend is running." : "Network error or server unreachable.");
       console.error(err);
     });
 }
@@ -165,22 +327,76 @@ function escapeHTML(text) {
 
 function showError(message) {
   const content = document.getElementById('loadingContent');
-  content.innerHTML = `
-    <div class="error-message">❌ ${message}</div>
-    <button onclick="retryTranslate()">Retry</button>
-  `;
-  document.getElementById('loadingOverlay').style.display = 'flex';
+  if (!content) {
+    console.error('Loading content element not found.');
+    return;
+  }
+
+  // Preserve existing elements (spinner, progress-bar, funFact) and append error
+  const existingError = content.querySelector('.error-message');
+  if (existingError) {
+    existingError.textContent = `❌ ${message}`;
+  } else {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = `❌ ${message}`;
+    content.appendChild(errorDiv);
+  }
+
+  const existingButton = content.querySelector('button');
+  if (!existingButton) {
+    const retryButton = document.createElement('button');
+    retryButton.onclick = retryImageUpload; // Updated to retryImageUpload
+    retryButton.textContent = 'Retry';
+    content.appendChild(retryButton);
+  }
+
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+  }
 }
 
 function retryTranslate() {
+  const content = document.getElementById('loadingContent');
+  if (content) {
+    const errorDiv = content.querySelector('.error-message');
+    if (errorDiv) errorDiv.remove();
+    const retryButton = content.querySelector('button');
+    if (retryButton) retryButton.remove();
+  }
   stopLoading();
   handleTranslate();
+}
+
+function retryImageUpload() {
+  const content = document.getElementById('loadingContent');
+  if (content) {
+    const errorDiv = content.querySelector('.error-message');
+    if (errorDiv) errorDiv.remove();
+    const retryButton = content.querySelector('button');
+    if (retryButton) retryButton.remove();
+  }
+  stopLoading();
+  // Trigger the upload or camera again
+  if (cameraButton) {
+    cameraButton.click(); // Reopen the camera modal
+  } else if (document.getElementById('uploadInput')) {
+    document.getElementById('uploadInput').click(); // Reopen file picker
+  }
 }
 
 function startLoading(customMessage = null) {
   const overlay = document.getElementById('loadingOverlay');
   const progress = document.getElementById('progressBar');
   const fact = document.getElementById('funFact');
+  
+  // Check if elements exist before accessing properties
+  if (!overlay || !progress || !fact) {
+    console.error('Loading overlay elements not found:', { overlay, progress, fact });
+    return;
+  }
+
   overlay.style.display = 'flex';
 
   let width = 0;
@@ -225,9 +441,11 @@ function startLoading(customMessage = null) {
   }, 1000);
 }
 
-
 function stopLoading() {
-  document.getElementById('loadingOverlay').style.display = 'none';
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+  }
   if (progressInterval) clearInterval(progressInterval);
   if (countdownTimer) clearInterval(countdownTimer);
 }
