@@ -1,55 +1,60 @@
-const fs = require('fs');
-const FileType = require('file-type');
-const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require("@google/generative-ai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const fs = require("fs").promises;
 
+// Initialize Gemini Vision API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Use a model that supports vision
 
-async function extractJavaCodeFromImage(filePath) {
-  const fileData = fs.readFileSync(filePath);
+async function extractJavaCodeFromImage(imagePath) {
+  const sessionId = `vision-${Date.now()}`;
+  console.log(`🖼️ [${sessionId}] Extracting text from image: ${imagePath}`);
 
-  // Detect MIME type from file content
-  const fileType = await FileType.fromBuffer(fileData);
-  const mimeType = fileType?.mime;
+  try {
+    // Read the image file
+    const imageData = await fs.readFile(imagePath);
+    const imageBase64 = imageData.toString("base64");
+    const mimeType = imagePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
 
-  if (!mimeType) {
-    throw new Error("Unable to determine mime type of the image.");
-  }
 
-  const base64Image = fileData.toString('base64');
-
-  const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-    safetySettings: [
-      { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-      { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-      { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-      { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE }
-    ]
-  });
-
-  const prompt = `
-The following image contains code text extracted via OCR.
-1. Check if it is Java code.
-2. If yes, fix common OCR typos (like 'jarla' instead of 'java', misread semicolons, brackets, etc).
-3. Return only the corrected Java code inside a code block: \`\`\`java ... \`\`\`
-4. If it is not Java code, respond only with: NOT_JAVA_CODE
-`;
-
-  const result = await model.generateContent([
-    {
+    // Prepare the prompt for Gemini Vision API
+    const prompt = "Extract the text from the image. If it contains Java code, return only the Java code. Otherwise, return the raw text.";
+    const imagePart = {
       inlineData: {
-        data: base64Image,
-        mimeType: mimeType
+        data: imageBase64,
+        mimeType
       }
-    },
-    { text: prompt }
-  ]);
+    };
 
-  const text = result.response.candidates[0]?.content?.parts?.[0]?.text || '';
+    // Call Gemini Vision API
+    const result = await model.generateContent([prompt, imagePart]);
+    const extractedText = result.response.text().trim();
 
-  if (text.includes('NOT_JAVA')) return null;
+    console.log(`📝 [${sessionId}] Extracted text: ${extractedText}`);
 
-  return text.trim();
+    // Relaxed heuristic to detect Java code
+    const isJavaCode = (
+      extractedText.includes("public") ||
+      extractedText.includes("class") ||
+      extractedText.includes("void") ||
+      extractedText.includes("static") ||
+      extractedText.includes("main") ||
+      (extractedText.includes("{") && extractedText.includes("}")) ||
+      extractedText.includes("System.out") ||
+      extractedText.match(/\b(int|double|float|String|boolean)\b/) || // Common Java types
+      extractedText.match(/\b(new|return|if|else|for|while)\b/) // Common Java keywords
+    ) && !extractedText.includes("def "); // Exclude Python-like syntax
+
+    if (isJavaCode) {
+      console.log(`✅ [${sessionId}] Java code detected.`);
+      return extractedText;
+    } else {
+      console.log(`❌ [${sessionId}] No Java code detected.`);
+      return { error: "No valid Java code found in image.", extractedText };
+    }
+  } catch (err) {
+    console.error(`❌ [${sessionId}] Error extracting text from image: ${err.message}`);
+    throw err;
+  }
 }
 
-module.exports = extractJavaCodeFromImage;
+module.exports = { extractJavaCodeFromImage };

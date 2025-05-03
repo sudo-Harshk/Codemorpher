@@ -1,9 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const fs = require('fs');
+const fs = require('fs'); // Import synchronous fs
+const fsPromises = require('fs').promises; // Import promise-based fs separately
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Create uploads directory if it doesn't exist
+const uploadDir = 'uploads/';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
 
 // 🔁 Unified Translator
 const useOpenRouter = require('./translators/useOpenRouter');
@@ -12,7 +19,7 @@ const useOpenRouter = require('./translators/useOpenRouter');
 const { logTranslation, logError } = require('./firebase/logService');
 
 // 🧠 Image parsing
-const extractJavaCodeFromImage = require('./vision/geminiImageParser');
+const { extractJavaCodeFromImage } = require('./vision/geminiImageParser');
 
 app.use(cors());
 app.use(express.json());
@@ -80,25 +87,32 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     return res.status(400).json({ error: 'No image uploaded.' });
   }
 
+  const sessionId = `upload-${Date.now()}`;
+  console.log(`📸 [${sessionId}] Processing uploaded image: ${file.path}`);
+
   try {
-    const extractedCode = await extractJavaCodeFromImage(file.path);
+    const result = await extractJavaCodeFromImage(file.path);
 
     // Cleanup uploaded file
-    fs.unlinkSync(file.path);
+    await fsPromises.unlink(file.path).catch(err => console.warn(`⚠️ [${sessionId}] Failed to delete file: ${err.message}`));
 
-    if (!extractedCode) {
-      return res.status(400).json({ error: 'No valid Java code found in image.' });
+    if (result.error) {
+      console.log(`❌ [${sessionId}] No Java code detected. Extracted text: ${result.extractedText}`);
+      return res.status(400).json({ error: result.error, extractedText: result.extractedText });
     }
 
     // 🔧 Clean backtick-wrapped code
-    const cleanCode = extractedCode
+    const cleanCode = result
       .replace(/```[\s\S]*?\n?/, '') 
       .replace(/```$/, '')         
       .trim();
 
+    console.log(`✅ [${sessionId}] Java code extracted successfully.`);
     res.json({ javaCode: cleanCode });
   } catch (err) {
-    console.error('❌ Upload error:', err.message);
+    console.error(`❌ [${sessionId}] Upload error: ${err.message}`);
+    // Cleanup file in case of error
+    await fsPromises.unlink(file.path).catch(err => console.warn(`⚠️ [${sessionId}] Failed to delete file: ${err.message}`));
     res.status(500).json({ error: 'Failed to process image.' });
   }
 });
