@@ -40,9 +40,11 @@ document.getElementById('uploadInput').addEventListener('change', async (event) 
 // Camera functionality
 cameraButton.addEventListener('click', async () => {
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: "environment" } }, 
+      audio: false
+    });
 
-    // 🔧 Set safe mobile attributes before playing stream
     cameraPreview.setAttribute("muted", "");
     cameraPreview.setAttribute("autoplay", "");
     cameraPreview.setAttribute("playsinline", "");
@@ -53,10 +55,13 @@ cameraButton.addEventListener('click', async () => {
     imagePreview.src = '';
     cameraModal.style.display = 'block';
     updateModalForCamera();
+
   } catch (err) {
     console.error('Error accessing camera:', err);
     let errorMessage = 'Error accessing camera. Please check permissions.';
-    if (err.name === 'NotAllowedError') {
+    if (err.name === 'OverconstrainedError') {
+      errorMessage = 'Back camera not available. Try again or switch to upload.';
+    } else if (err.name === 'NotAllowedError') {
       errorMessage = 'Camera access denied. Please allow camera permissions in your browser settings.';
     } else if (err.name === 'NotSecureError') {
       errorMessage = 'Camera access requires a secure connection (HTTPS). Please use HTTPS or test on localhost.';
