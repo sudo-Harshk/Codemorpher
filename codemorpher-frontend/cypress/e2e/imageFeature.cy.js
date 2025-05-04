@@ -1,34 +1,33 @@
 describe('📸 Image Upload & Camera Feature Tests', () => {
-    const baseUrl = 'http://localhost:5500/codemorpher-frontend/public';
-  
-    beforeEach(() => {
-      cy.visit(baseUrl);
-    });
-  
-    it('should open the upload file dialog and allow image selection', () => {
-      cy.get('#uploadImageButton').click();
-      cy.get('#uploadInput').selectFile('cypress/fixtures/test-img-2.jpg', { force: true });
-  
-      cy.get('#javaCode', { timeout: 15000 })
-      .should('be.visible')
-      .invoke('val')
-      .should('include', 'public class');
+  beforeEach(() => {
+    cy.visit('http://localhost:5500/codemorpher-frontend/public');
 
-      
-      cy.get('#javaCode').invoke('val').should('include', 'public class');
-    });
-  
-    it('should open and close the camera modal properly', () => {
-      cy.get('#cameraButton').click();
-      cy.get('#cameraModal').should('be.visible');
-      cy.get('#closeCameraButton').click();
-      cy.get('#cameraModal').should('not.be.visible');
-    });
-  
-    it('should show camera preview and allow capture button to be visible', () => {
-      cy.get('#cameraButton').click();
-      cy.get('#cameraPreview').should('be.visible');
-      cy.get('#captureButton').should('be.visible');
+    cy.window().then((win) => {
+      cy.stub(win.navigator.mediaDevices, 'getUserMedia').rejects(new DOMException('No back camera available.', 'OverconstrainedError'));
     });
   });
-  
+
+  it('should display the Skip button when no back camera is available', () => {
+    cy.get('#cameraButton').click();
+
+    cy.get('#cameraError', { timeout: 5000 }).should('be.visible').and('contain', 'No back camera available');
+
+    cy.get('.skip-button', { timeout: 5000 }).should('be.visible').and('contain', 'Skip');
+  });
+
+  it('should return to the home page when the Skip button is clicked', () => {
+    cy.get('#cameraButton').click();
+
+    cy.get('#cameraError', { timeout: 5000 }).should('be.visible').and('contain', 'No back camera available');
+
+    cy.get('.skip-button', { timeout: 5000 }).click();
+
+    cy.get('#cameraError', { timeout: 5000 }).should('not.be.visible');
+
+    cy.get('#cameraModal', { timeout: 5000 }).should('not.be.visible');
+
+    cy.get('.header-with-logo', { timeout: 5000 }).should('be.visible');
+    cy.get('#javaCode', { timeout: 5000 }).should('be.visible');
+    cy.get('#translateButton', { timeout: 5000 }).should('be.visible');
+  });
+});

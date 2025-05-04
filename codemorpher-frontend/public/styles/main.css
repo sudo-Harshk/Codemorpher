@@ -229,6 +229,14 @@ textarea:focus {
   margin-top: 8px;
 }
 
+.camera-error {
+  font-size: 14px;
+  color: #FF7043;
+  margin-top: 5px;
+  text-align: left;
+  min-height: 20px;
+}
+
 /* ---------------------------------------------------
    5. Buttons (General)
 --------------------------------------------------- */
@@ -254,30 +262,67 @@ button:hover {
   background-color: #2E7D32;
 }
 
+.skip-button {
+  background-color: #78909C;
+  color: #FFFFFF;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.skip-button:hover {
+  background-color: #607D8B;
+}
+
+/* Responsive skip-button */
+@media (min-width: 1200px) {
+  .skip-button {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .skip-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
 /* ---------------------------------------------------
    6. Language Selection Buttons
 --------------------------------------------------- */
+
+/* Default styles (Mobile/Small Screens - Original Grid Layout) */
 .language-selection {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);  
+  grid-template-columns: repeat(3, 1fr); /* Default 3 columns */
   gap: 8px;
   margin: 10px 0 25px 0;
+  /* Ensure flex/overflow properties are NOT here by default */
 }
 
+/* Styles for individual language options (apply always unless overridden below) */
 .lang-option {
   background: #ffffff;
   border: 2px solid transparent;
   border-radius: 16px;
   padding: 12px;
-  touch-action: manipulation; 
+  touch-action: manipulation;
   cursor: pointer;
   font-size: 12px;
   text-align: center;
   transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  min-width: 70px;
+  min-width: 70px; /* Base min-width */
   position: relative;
   -webkit-tap-highlight-color: transparent;
+  /* Ensure flex-shrink is not set by default if it causes issues with grid */
+  /* flex-shrink: unset; */ /* Or remove if not needed for grid */
 }
 
 .lang-option img {
@@ -295,6 +340,8 @@ button:hover {
   background: #ffffff;
   border: 2px solid transparent;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  /* Consider adding a visible selected border: */
+  /* border-color: #26A69A; */
 }
 
 .lang-option:active {
@@ -327,31 +374,51 @@ button:hover {
   animation: popIn 0.4s ease forwards;
 }
 
-/* Scale down language options on very small screens */
+/* Very Small Screen Adjustment (Grid - Original) */
 @media (max-width: 400px) {
   .language-selection {
+    /* Adjust grid for very small screens */
     grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
   }
-
-  .lang-option {
+  /* Keep original adjustments for options, images, ticks */
+   .lang-option {
     min-width: 60px;
     padding: 8px;
     font-size: 10px;
   }
-
-  .lang-option img {
+   .lang-option img {
     width: 32px;
     height: 32px;
   }
-
-  .tick {
+   .tick {
     width: 16px;
     height: 16px;
     line-height: 16px;
   }
-
-  .tick::after {
+   .tick::after {
     font-size: 8px;
+  }
+}
+
+/* Larger Screen Override (New Requirement - Horizontal Flex Layout) */
+@media (min-width: 768px) { /* Adjust this breakpoint as needed */
+  .language-selection {
+    display: flex;          /* Switch to Flexbox */
+    flex-wrap: nowrap;      /* Force single line */
+    overflow-x: auto;       /* Add horizontal scroll if needed */
+    padding-bottom: 10px;   /* Space for scrollbar */
+
+    /* Explicitly override grid properties */
+    grid-template-columns: none;
+
+    /* Ensure gap is appropriate */
+    gap: 8px; /* Or adjust if you want a different gap for horizontal layout */
+  }
+
+  .lang-option {
+     flex-shrink: 0; /* Prevent shrinking in flex layout */
+     /* You could optionally set a different min-width here if desired */
+     /* min-width: 80px; */
   }
 }
 
@@ -542,7 +609,7 @@ pre {
   }
 
   textarea {
-    height: 180px;           
+    height: 180px;
     font-size: 13px;
     line-height: 1.4;
   }
@@ -556,7 +623,7 @@ pre {
   .language-selection {
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    margin: 10px 0 20px 0; /* Add more space below language selection */
+    margin: 10px 0 20px 0; 
   }
 
   .lang-option img {
@@ -569,10 +636,29 @@ pre {
   }
 
   .button-group {
-    gap: 15px; /* Increase spacing between action buttons on mobile */
+    gap: 15px; 
   }
 }
+@media (min-width: 768px) { /* Adjust this breakpoint as needed */
+  .language-selection {
+    display: flex;          /* Switch to Flexbox */
+    flex-wrap: nowrap;      /* Keep single line */
 
+    /* --- KEY CHANGE --- */
+    justify-content: space-evenly; 
+
+ 
+    grid-template-columns: none;
+
+    /* Keep minimum gap between items */
+    gap: 8px;
+  }
+
+  .lang-option {
+     flex-shrink: 0; /* Prevent shrinking below min-width */
+     /* flex-grow: 0; is default, items won't grow to fill space */
+  }
+}
 /* Stack buttons on smaller screens */
 @media (max-width: 900px) {
   .button-group {
@@ -656,6 +742,18 @@ pre {
   min-width: 100px;
 }
 
+/* Ensure buttons are in a single line on larger screens */
+@media (min-width: 900px) {
+  .button-group {
+    flex-wrap: nowrap;
+  }
+
+  .button-group button {
+    flex: 1 1 auto;
+    min-width: 150px; /* Adjust the minimum width as needed */
+  }
+}
+
 .camera-modal {
   position: fixed;
   top: 50%;
@@ -669,7 +767,7 @@ pre {
   text-align: center;
   max-width: 90%;
   width: 400px;
-  max-height: 90vh;       
+  max-height: 90vh;
   overflow-y: auto;
 }
 
@@ -678,10 +776,9 @@ pre {
   max-width: 350px;
   height: auto;
   border-radius: 5px;
-  object-fit: cover;      
-  aspect-ratio: 4 / 3;    
+  object-fit: cover;
+  aspect-ratio: 4 / 3;
 }
-
 
 .modal-buttons {
   display: flex;
@@ -694,7 +791,7 @@ pre {
   flex: 1;
   min-width: 100px;
   padding: 14px;
-  font-size: 16px; 
+  font-size: 16px;
 }
 
 /* ---------------------------------------------------
@@ -718,7 +815,7 @@ pre {
     flex-direction: column;
     gap: 15px;
   }
-    
+
   .output-section .buttons {
     flex-direction: column;
     align-items: stretch;
@@ -744,4 +841,3 @@ pre {
 .copy-button:hover, .run-button:hover {
   background-color: #2E7D32;
 }
-
