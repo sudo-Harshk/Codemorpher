@@ -10,6 +10,7 @@ const cameraPreview = document.getElementById('cameraPreview');
 const imagePreview = document.getElementById('imagePreview');
 const captureButton = document.getElementById('captureButton');
 const closeCameraButton = document.getElementById('closeCameraButton');
+const cameraError = document.getElementById('cameraError');
 
 // Use the Render backend URL
 const BACKEND_URL = 'https://codemorpher-backend.onrender.com';
@@ -41,7 +42,7 @@ document.getElementById('uploadInput').addEventListener('change', async (event) 
 cameraButton.addEventListener('click', async () => {
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { exact: "environment" } }, 
+      video: { facingMode: { exact: "environment" } },
       audio: false
     });
 
@@ -60,7 +61,7 @@ cameraButton.addEventListener('click', async () => {
     console.error('Error accessing camera:', err);
     let errorMessage = 'Error accessing camera. Please check permissions.';
     if (err.name === 'OverconstrainedError') {
-      errorMessage = 'Back camera not available. Try again or switch to upload.';
+      errorMessage = 'No back camera available.';
     } else if (err.name === 'NotAllowedError') {
       errorMessage = 'Camera access denied. Please allow camera permissions in your browser settings.';
     } else if (err.name === 'NotSecureError') {
@@ -68,10 +69,9 @@ cameraButton.addEventListener('click', async () => {
     } else if (err.name === 'NotFoundError') {
       errorMessage = 'No camera found on this device.';
     }
-    showError(errorMessage);
+    showError(errorMessage, err.name === 'OverconstrainedError' || err.name === 'NotFoundError');
   }
 });
-
 
 captureButton.addEventListener('click', async () => {
   // If in confirmation mode, this button acts as "Yes"
@@ -204,7 +204,77 @@ async function processImage(blob) {
   }
 }
 
-// Existing functions
+// Handle Skip button click for camera errors
+function skipCamera() {
+  const content = document.getElementById('loadingContent');
+  if (content) {
+    const errorDiv = content.querySelector('.error-message');
+    if (errorDiv) errorDiv.remove();
+    const skipButton = content.querySelector('.skip-button');
+    if (skipButton) skipButton.remove();
+  }
+  stopLoading();
+  if (cameraError) {
+    cameraError.textContent = 'No back camera available';
+    cameraError.style.display = 'block';
+    // Hide the message after 5 seconds
+    setTimeout(() => {
+      cameraError.style.display = 'none';
+      cameraError.textContent = '';
+    }, 5000);
+  }
+}
+
+// Modified showError to handle camera-specific errors with Skip button
+function showError(message, isCameraError = false) {
+  const content = document.getElementById('loadingContent');
+  if (!content) {
+    console.error('Loading content element not found.');
+    return;
+  }
+
+  // Preserve existing elements (spinner, progress-bar, funFact) and append error
+  const existingError = content.querySelector('.error-message');
+  if (existingError) {
+    existingError.textContent = `❌ ${message}`;
+  } else {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = `❌ ${message}`;
+    content.appendChild(errorDiv);
+  }
+
+  // Remove any existing button
+  const existingButton = content.querySelector('button');
+  if (existingButton) existingButton.remove();
+
+  // Add Skip button for camera errors, Retry for others
+  if (isCameraError) {
+    const skipButton = document.createElement('button');
+    skipButton.className = 'skip-button';
+    skipButton.textContent = 'Skip';
+    skipButton.onclick = skipCamera;
+    content.appendChild(skipButton);
+  } else {
+    const retryButton = document.createElement('button');
+    retryButton.onclick = retryImageUpload;
+    retryButton.textContent = 'Retry';
+    content.appendChild(retryButton);
+  }
+
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+  }
+
+  // Show the camera error element
+  if (cameraError) {
+    cameraError.textContent = message;
+    cameraError.style.display = 'block';
+  }
+}
+
+// Existing functions (unchanged)
 function handleTranslate() {
   const javaCode = document.getElementById('javaCode').value.trim();
   const targetLanguage = document.getElementById('targetLanguage').value;
@@ -330,38 +400,6 @@ function escapeHTML(text) {
   }[c]));
 }
 
-function showError(message) {
-  const content = document.getElementById('loadingContent');
-  if (!content) {
-    console.error('Loading content element not found.');
-    return;
-  }
-
-  // Preserve existing elements (spinner, progress-bar, funFact) and append error
-  const existingError = content.querySelector('.error-message');
-  if (existingError) {
-    existingError.textContent = `❌ ${message}`;
-  } else {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.textContent = `❌ ${message}`;
-    content.appendChild(errorDiv);
-  }
-
-  const existingButton = content.querySelector('button');
-  if (!existingButton) {
-    const retryButton = document.createElement('button');
-    retryButton.onclick = retryImageUpload; // Updated to retryImageUpload
-    retryButton.textContent = 'Retry';
-    content.appendChild(retryButton);
-  }
-
-  const overlay = document.getElementById('loadingOverlay');
-  if (overlay) {
-    overlay.style.display = 'flex';
-  }
-}
-
 function retryTranslate() {
   const content = document.getElementById('loadingContent');
   if (content) {
@@ -395,7 +433,7 @@ function startLoading(customMessage = null) {
   const overlay = document.getElementById('loadingOverlay');
   const progress = document.getElementById('progressBar');
   const fact = document.getElementById('funFact');
-  
+
   // Check if elements exist before accessing properties
   if (!overlay || !progress || !fact) {
     console.error('Loading overlay elements not found:', { overlay, progress, fact });
