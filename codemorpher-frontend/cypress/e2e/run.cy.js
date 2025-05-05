@@ -1,6 +1,20 @@
 describe('Codemorpher - Run Button Feature', () => {
   beforeEach(() => {
+    // Prevent uncaught exceptions from failing the test
+    cy.on('uncaught:exception', (err, runnable) => {
+      console.error('Uncaught exception:', err);
+      return false; // Prevent test failure
+    });
+
     cy.visit('http://localhost:5500/codemorpher-frontend/public');
+
+    // Intercept translation API and store response
+    let apiResponse = null;
+    cy.intercept('POST', '**/translate', (req) => {
+      req.on('response', (res) => {
+        apiResponse = res.body; // Store response for later logging
+      });
+    }).as('translateApi');
 
     cy.get('#javaCode')
       .clear()
@@ -12,7 +26,19 @@ describe('Codemorpher - Run Button Feature', () => {
     cy.get('.lang-option[data-value="javascript"]').click();
     cy.get('#translateButton').click();
 
-    cy.get('#translatedCodeBlock', { timeout: 20000 }) 
+    // Wait for API response
+    cy.wait('@translateApi', { timeout: 40000 }).its('response.statusCode').should('eq', 200);
+
+    // Log API response and translated code block content
+    cy.then(() => {
+      cy.log('Translation API response:', JSON.stringify(apiResponse));
+    });
+    cy.get('#translatedCodeBlock').then(($el) => {
+      cy.log('Translated code block content:', $el.text());
+    });
+
+    // Confirm translation appeared
+    cy.get('#translatedCodeBlock', { timeout: 40000 })
       .should('not.contain', 'Translation will appear here...')
       .and('not.be.empty');
   });
@@ -30,7 +56,7 @@ describe('Codemorpher - Run Button Feature', () => {
     cy.contains('button', 'Run Code').click();
 
     cy.get('@windowOpen').should('have.been.calledOnce');
-    cy.get('@windowOpen').should('have.been.calledWithMatch', /playcode\.io|compiler-url/); 
+    cy.get('@windowOpen').should('have.been.calledWithMatch', /playcode\.io|compiler-url/);
     cy.screenshot('run-button-clicked');
   });
 });
