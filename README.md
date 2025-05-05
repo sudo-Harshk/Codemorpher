@@ -62,7 +62,6 @@ CODEMORPHER/
 │   ├── cypress.config.js           # Cypress configuration
 │   ├── package-lock.json           # Dependency lock file
 │   ├── package.json                # Frontend dependencies & scripts
-│   ├── preview.html                # Preview HTML file
 │   └── README.md                   # Frontend documentation
 │
 └── README.md                       # Project documentation
