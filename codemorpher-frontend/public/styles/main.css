@@ -1,6 +1,16 @@
-/* ---------------------------------------------------
-   1. Reset and Base Setup
---------------------------------------------------- */
+:root {
+  --primary-color: #26A69A;
+  --hover-color: #2E7D32;
+  --secondary-color: #78909C;
+  --secondary-hover: #607D8B;
+  --background-light: #ECEFF1;
+  --background-focus: #E0F2F1;
+  --error-color: #FF7043;
+  --shadow-light: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 1. Reset and Base Setup */
 @import url('https://fonts.googleapis.com/css2?family=Rowdies:wght@300;400;700&display=swap');
 
 * {
@@ -17,13 +27,11 @@ body {
   padding: 20px;
 }
 
-/* ---------------------------------------------------
-   2. Header Section
---------------------------------------------------- */
+/* 2. Header Section */
 header {
   text-align: center;
   font-size: 28px;
-  color: #26A69A;
+  color: var(--primary-color);
   margin-bottom: 20px;
   font-weight: 600;
 }
@@ -49,26 +57,13 @@ header {
 
 .dots::after {
   content: '';
-  display: inline-block;
   animation: dots 1.5s steps(4, end) infinite;
 }
 
-.rowdies-light {
-  font-family: "Rowdies", sans-serif;
-  font-weight: 300;
-}
+.rowdies-light { font-family: "Rowdies", sans-serif; font-weight: 300; }
+.rowdies-regular { font-family: "Rowdies", sans-serif; font-weight: 400; }
+.rowdies-bold { font-family: "Rowdies", sans-serif; font-weight: 700; }
 
-.rowdies-regular {
-  font-family: "Rowdies", sans-serif;
-  font-weight: 400;
-}
-
-.rowdies-bold {
-  font-family: "Rowdies", sans-serif;
-  font-weight: 700;
-}
-
-/* ✅ Logo + Name aligned nicely */
 .header-with-logo {
   display: flex;
   align-items: center;
@@ -83,9 +78,7 @@ header {
   object-fit: contain;
 }
 
-/* ---------------------------------------------------
-   3. Layout and Card Structure
---------------------------------------------------- */
+/* 3. Layout and Card Structure */
 .container {
   display: flex;
   gap: 20px;
@@ -95,53 +88,37 @@ header {
   margin: 0 auto;
 }
 
-/* Distribute cards evenly on larger screens */
-@media (min-width: 1200px) {
-  .container {
-    justify-content: space-between;
-  }
-}
-
 .card {
   background-color: #FFFFFF;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-light);
   padding: 20px;
   transition: all 0.3s ease;
-  margin-bottom: 20px; /* Add default vertical spacing between cards */
+  margin-bottom: 20px;
 }
 
 .card:hover {
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-hover);
   transform: translateY(-2px);
 }
 
-.input-card {
+/* Shared card styles */
+.input-card, .output-card {
   flex: 1 1 auto;
   min-width: 300px;
-  max-width: min(1000px, 48vw); /* Increased for larger screens */
+  max-width: min(1000px, 48vw);
+}
+
+.input-card {
   padding: 20px !important;
   align-self: flex-start;
 }
 
 .output-card {
-  flex: 1 1 auto;
-  min-width: 300px;
-  max-width: min(1000px, 48vw); /* Increased for larger screens */
   margin-top: 20px;
 }
 
-/* For very large screens, allow cards to grow further */
-@media (min-width: 1600px) {
-  .input-card,
-  .output-card {
-    max-width: min(1200px, 48vw);
-  }
-}
-
-/* ---------------------------------------------------
-   4. Input Panel
---------------------------------------------------- */
+/* 4. Input Panel */
 .input-header {
   display: flex;
   justify-content: space-between;
@@ -152,7 +129,7 @@ header {
 .retry-icon {
   width: 24px;
   height: 24px;
-  border: 2px solid #26A69A;
+  border: 2px solid var(--primary-color);
   border-radius: 50%;
   position: relative;
   cursor: pointer;
@@ -165,7 +142,7 @@ header {
   position: absolute;
   width: 10px;
   height: 10px;
-  border: 2px solid #26A69A;
+  border: 2px solid var(--primary-color);
 }
 
 .retry-icon::before {
@@ -188,19 +165,6 @@ header {
   transform: rotate(360deg);
 }
 
-@media (max-width: 768px) {
-  .retry-icon {
-    width: 20px;
-    height: 20px;
-  }
-
-  .retry-icon::before,
-  .retry-icon::after {
-    width: 8px;
-    height: 8px;
-  }
-}
-
 label {
   font-size: 16px;
   margin-bottom: 10px;
@@ -210,7 +174,7 @@ label {
 textarea {
   width: 100%;
   height: 250px;
-  background-color: #ECEFF1;
+  background-color: var(--background-light);
   border: none;
   border-radius: 5px;
   padding: 12px;
@@ -220,7 +184,7 @@ textarea {
 }
 
 textarea:focus {
-  background-color: #E0F2F1;
+  background-color: var(--background-focus);
   outline: none;
 }
 
@@ -231,39 +195,30 @@ textarea:focus {
 
 .camera-error {
   font-size: 14px;
-  color: #FF7043;
+  color: var(--error-color);
   margin-top: 5px;
   text-align: left;
   min-height: 20px;
 }
 
-/* ---------------------------------------------------
-   5. Buttons (General)
---------------------------------------------------- */
-button {
-  background-color: #26A69A;
+/* 5. Buttons (General) */
+button, .copy-button, .run-button {
+  background-color: var(--primary-color);
   color: #FFFFFF;
   border: none;
   padding: 12px 24px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.3s ease;
 }
 
-/* Scale buttons on larger screens */
-@media (min-width: 1200px) {
-  button {
-    padding: 14px 28px;
-    font-size: 16px;
-  }
-}
-
-button:hover {
-  background-color: #2E7D32;
+button:hover, .copy-button:hover, .run-button:hover {
+  background-color: var(--hover-color);
 }
 
 .skip-button {
-  background-color: #78909C;
+  background-color: var(--secondary-color);
   color: #FFFFFF;
   border: none;
   padding: 12px 24px;
@@ -274,55 +229,30 @@ button:hover {
 }
 
 .skip-button:hover {
-  background-color: #607D8B;
+  background-color: var(--secondary-hover);
 }
 
-/* Responsive skip-button */
-@media (min-width: 1200px) {
-  .skip-button {
-    padding: 14px 28px;
-    font-size: 16px;
-  }
-}
-
-@media (max-width: 768px) {
-  .skip-button {
-    width: 100%;
-    padding: 12px;
-    font-size: 14px;
-  }
-}
-
-/* ---------------------------------------------------
-   6. Language Selection Buttons
---------------------------------------------------- */
-
-/* Default styles (Mobile/Small Screens - Original Grid Layout) */
+/* 6. Language Selection Buttons */
 .language-selection {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Default 3 columns */
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   margin: 10px 0 25px 0;
-  /* Ensure flex/overflow properties are NOT here by default */
 }
 
-/* Styles for individual language options (apply always unless overridden below) */
 .lang-option {
   background: #ffffff;
   border: 2px solid transparent;
   border-radius: 16px;
   padding: 12px;
-  touch-action: manipulation;
   cursor: pointer;
   font-size: 12px;
   text-align: center;
   transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  min-width: 70px; /* Base min-width */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  min-width: 70px;
   position: relative;
   -webkit-tap-highlight-color: transparent;
-  /* Ensure flex-shrink is not set by default if it causes issues with grid */
-  /* flex-shrink: unset; */ /* Or remove if not needed for grid */
 }
 
 .lang-option img {
@@ -333,15 +263,12 @@ button:hover {
 
 .lang-option:hover {
   background: #f0fdfa;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .lang-option.selected {
   background: #ffffff;
-  border: 2px solid transparent;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  /* Consider adding a visible selected border: */
-  /* border-color: #26A69A; */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .lang-option:active {
@@ -355,12 +282,10 @@ button:hover {
   right: 6px;
   width: 18px;
   height: 18px;
-  background-color: #26A69A;
+  background-color: var(--primary-color);
   border-radius: 50%;
   text-align: center;
   line-height: 18px;
-  font-weight: bold;
-  font-size: 12px;
 }
 
 .tick::after {
@@ -374,57 +299,7 @@ button:hover {
   animation: popIn 0.4s ease forwards;
 }
 
-/* Very Small Screen Adjustment (Grid - Original) */
-@media (max-width: 400px) {
-  .language-selection {
-    /* Adjust grid for very small screens */
-    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-  }
-  /* Keep original adjustments for options, images, ticks */
-   .lang-option {
-    min-width: 60px;
-    padding: 8px;
-    font-size: 10px;
-  }
-   .lang-option img {
-    width: 32px;
-    height: 32px;
-  }
-   .tick {
-    width: 16px;
-    height: 16px;
-    line-height: 16px;
-  }
-   .tick::after {
-    font-size: 8px;
-  }
-}
-
-/* Larger Screen Override (New Requirement - Horizontal Flex Layout) */
-@media (min-width: 768px) { /* Adjust this breakpoint as needed */
-  .language-selection {
-    display: flex;          /* Switch to Flexbox */
-    flex-wrap: nowrap;      /* Force single line */
-    overflow-x: auto;       /* Add horizontal scroll if needed */
-    padding-bottom: 10px;   /* Space for scrollbar */
-
-    /* Explicitly override grid properties */
-    grid-template-columns: none;
-
-    /* Ensure gap is appropriate */
-    gap: 8px; /* Or adjust if you want a different gap for horizontal layout */
-  }
-
-  .lang-option {
-     flex-shrink: 0; /* Prevent shrinking in flex layout */
-     /* You could optionally set a different min-width here if desired */
-     /* min-width: 80px; */
-  }
-}
-
-/* ---------------------------------------------------
-   7. Output Section
---------------------------------------------------- */
+/* 7. Output Section */
 .output-section {
   margin-bottom: 15px;
 }
@@ -465,8 +340,8 @@ button:hover {
 .chevron {
   width: 12px;
   height: 12px;
-  border-right: 3px solid #26A69A;
-  border-bottom: 3px solid #26A69A;
+  border-right: 3px solid var(--primary-color);
+  border-bottom: 3px solid var(--primary-color);
   transform: rotate(45deg);
   transition: transform 0.3s ease;
 }
@@ -480,7 +355,7 @@ button:hover {
 }
 
 pre {
-  background-color: #ECEFF1;
+  background-color: var(--background-light);
   padding: 12px;
   border-radius: 0 0 5px 5px;
   font-family: 'Fira Code', monospace;
@@ -503,21 +378,7 @@ pre {
   min-width: 120px;
 }
 
-@media (max-width: 768px) {
-  .output-section .buttons {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .output-section .buttons button {
-    width: 100%;
-    min-width: unset;
-  }
-}
-
-/* ---------------------------------------------------
-   8. Loading Overlay
---------------------------------------------------- */
+/* 8. Loading Overlay */
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -536,7 +397,7 @@ pre {
   background: #FFFFFF;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-light);
   text-align: center;
   max-width: 400px;
   width: 90%;
@@ -544,7 +405,7 @@ pre {
 
 .spinner {
   border: 4px solid #E0F7FA;
-  border-top: 4px solid #26A69A;
+  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -555,7 +416,7 @@ pre {
 .progress-bar {
   width: 100%;
   height: 10px;
-  background: #ECEFF1;
+  background: var(--background-light);
   border-radius: 5px;
   overflow: hidden;
   margin-bottom: 15px;
@@ -563,7 +424,7 @@ pre {
 
 .progress {
   height: 100%;
-  background: #26A69A;
+  background: var(--primary-color);
   width: 0;
   transition: width 1s ease;
 }
@@ -575,161 +436,12 @@ pre {
 
 .error-message {
   font-size: 16px;
-  color: #FF7043;
+  color: var(--error-color);
   margin-bottom: 15px;
   min-height: 20px;
 }
 
-/* ---------------------------------------------------
-   9. Responsive Media Queries
---------------------------------------------------- */
-@media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-    gap: 15px;
-    padding: 10px;
-  }
-
-  .card {
-    padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    margin-bottom: 30px; /* Increase spacing between cards on mobile */
-  }
-
-  .input-card {
-    align-self: flex-start;
-    max-width: 100%;
-    padding: 16px !important;
-  }
-
-  .output-card {
-    flex: 1 1 auto;
-    max-width: 100%;
-  }
-
-  textarea {
-    height: 180px;
-    font-size: 13px;
-    line-height: 1.4;
-  }
-
-  button {
-    width: 100%;
-    height: 48px;
-    font-size: 14px;
-  }
-
-  .language-selection {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin: 10px 0 20px 0; 
-  }
-
-  .lang-option img {
-    width: 32px;
-    height: 32px;
-  }
-
-  .tick::after {
-    font-size: 9px;
-  }
-
-  .button-group {
-    gap: 15px; 
-  }
-}
-@media (min-width: 768px) { /* Adjust this breakpoint as needed */
-  .language-selection {
-    display: flex;          /* Switch to Flexbox */
-    flex-wrap: nowrap;      /* Keep single line */
-
-    /* --- KEY CHANGE --- */
-    justify-content: space-evenly; 
-
- 
-    grid-template-columns: none;
-
-    /* Keep minimum gap between items */
-    gap: 8px;
-  }
-
-  .lang-option {
-     flex-shrink: 0; /* Prevent shrinking below min-width */
-     /* flex-grow: 0; is default, items won't grow to fill space */
-  }
-}
-/* Stack buttons on smaller screens */
-@media (max-width: 900px) {
-  .button-group {
-    flex-direction: column !important;
-    gap: 15px !important; /* Ensure consistent spacing */
-  }
-
-  .button-group button {
-    flex: 1 1 100% !important;
-    min-width: unset !important;
-    width: 100% !important;
-  }
-}
-
-/* Fine-tune for very small screens like iQOO (~412px) */
-@media (max-width: 414px) {
-  .card {
-    margin-bottom: 35px; /* Further increase spacing for better separation */
-  }
-
-  .language-selection {
-    gap: 8px;
-    margin: 10px 0 25px 0; /* More space below language selection */
-  }
-
-  .lang-option {
-    min-width: 60px;
-    padding: 8px;
-    font-size: 10px;
-  }
-
-  .lang-option img {
-    width: 30px;
-    height: 30px;
-  }
-
-  .button-group {
-    gap: 20px; /* More spacing between action buttons */
-  }
-}
-
-/* ---------------------------------------------------
-   10. Animations
---------------------------------------------------- */
-@keyframes beat {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.3); }
-}
-
-@keyframes dots {
-  0% { content: ''; }
-  25% { content: '.'; }
-  50% { content: '..'; }
-  75% { content: '...'; }
-  100% { content: ''; }
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes popIn {
-  0% { transform: scale(0); opacity: 0; }
-  60% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* ---------------------------------------------------
-   11. Button Group and Camera Modal
---------------------------------------------------- */
+/* 9. Button Group and Camera Modal */
 .button-group {
   display: flex;
   gap: 10px;
@@ -742,18 +454,6 @@ pre {
   min-width: 100px;
 }
 
-/* Ensure buttons are in a single line on larger screens */
-@media (min-width: 900px) {
-  .button-group {
-    flex-wrap: nowrap;
-  }
-
-  .button-group button {
-    flex: 1 1 auto;
-    min-width: 150px; /* Adjust the minimum width as needed */
-  }
-}
-
 .camera-modal {
   position: fixed;
   top: 50%;
@@ -762,7 +462,7 @@ pre {
   background-color: #FFFFFF;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-light);
   z-index: 1001;
   text-align: center;
   max-width: 90%;
@@ -794,50 +494,193 @@ pre {
   font-size: 16px;
 }
 
-/* ---------------------------------------------------
-   12. Run Code Button Styling
---------------------------------------------------- */
-.output-section .buttons {
-  margin-top: 20px;
-  display: flex;
-  gap: 10px;
-  justify-content: flex-start;
-  flex-wrap: wrap;
+/* 10. Animations */
+@keyframes beat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
 }
 
-.output-section .buttons button {
-  flex: 1 1 45%;
-  min-width: 120px;
+@keyframes dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+  100% { content: ''; }
 }
 
-@media (max-width: 768px) {
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 11. Responsive Media Queries */
+@media (min-width: 768px) {
+  .language-selection {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-evenly;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    gap: 8px;
+  }
+
+  .lang-option {
+    flex-shrink: 0;
+  }
+}
+
+@media (min-width: 900px) {
   .button-group {
+    flex-wrap: nowrap;
+  }
+
+  .button-group button {
+    flex: 1 1 auto;
+    min-width: 150px;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1062px) {
+  .button-group {
+    flex-wrap: wrap;
+  }
+
+  .button-group button {
+    flex: 1 1 45%;
+    min-width: 120px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    justify-content: space-between;
+  }
+
+  button, .skip-button {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .input-card, .output-card {
+    max-width: min(1200px, 48vw);
+  }
+}
+
+@media (max-width: 900px) {
+  .container {
+    flex-direction: column;
+    gap: 15px;
+    padding: 10px;
+    align-items: center;
+  }
+
+  .card, .input-card, .output-card {
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 90vw;
+    align-self: center;
+  }
+
+  .input-card {
+    padding: 16px !important;
+  }
+
+  textarea {
+    height: 180px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  button, .skip-button {
+    width: 100%;
+    height: 48px;
+    font-size: 14px;
+  }
+
+  .button-group, .output-section .buttons {
     flex-direction: column;
     gap: 15px;
   }
 
-  .output-section .buttons {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .output-section .buttons button {
+  .button-group button, .output-section .buttons button {
+    flex: 1 1 100%;
     width: 100%;
     min-width: unset;
   }
 }
 
-.copy-button, .run-button {
-  background-color: #26A69A;
-  color: #FFFFFF;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+@media (max-width: 768px) {
+  .retry-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .retry-icon::before,
+  .retry-icon::after {
+    width: 8px;
+    height: 8px;
+  }
+
+  .language-selection {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 10px 0 20px 0;
+  }
+
+  .lang-option img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .tick::after {
+    font-size: 9px;
+  }
 }
 
-.copy-button:hover, .run-button:hover {
-  background-color: #2E7D32;
+@media (max-width: 414px) {
+  .card {
+    margin-bottom: 35px;
+  }
+
+  .language-selection {
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 8px;
+    margin: 10px 0 25px 0;
+  }
+
+  .lang-option {
+    min-width: 60px;
+    padding: 8px;
+    font-size: 10px;
+  }
+
+  .lang-option img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .tick {
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+  }
+
+  .tick::after {
+    font-size: 8px;
+  }
+
+  .button-group {
+    gap: 20px;
+  }
 }
