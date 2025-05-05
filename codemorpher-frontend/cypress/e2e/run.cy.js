@@ -1,18 +1,16 @@
 describe('Codemorpher - Run Button Feature', () => {
   beforeEach(() => {
-    // Prevent uncaught exceptions from failing the test
     cy.on('uncaught:exception', (err, runnable) => {
       console.error('Uncaught exception:', err);
-      return false; // Prevent test failure
+      return false; 
     });
 
     cy.visit('http://localhost:5500/codemorpher-frontend/public');
 
-    // Intercept translation API and store response
     let apiResponse = null;
     cy.intercept('POST', '**/translate', (req) => {
       req.on('response', (res) => {
-        apiResponse = res.body; // Store response for later logging
+        apiResponse = res.body; 
       });
     }).as('translateApi');
 
@@ -26,10 +24,8 @@ describe('Codemorpher - Run Button Feature', () => {
     cy.get('.lang-option[data-value="javascript"]').click();
     cy.get('#translateButton').click();
 
-    // Wait for API response
     cy.wait('@translateApi', { timeout: 40000 }).its('response.statusCode').should('eq', 200);
 
-    // Log API response and translated code block content
     cy.then(() => {
       cy.log('Translation API response:', JSON.stringify(apiResponse));
     });
@@ -37,7 +33,6 @@ describe('Codemorpher - Run Button Feature', () => {
       cy.log('Translated code block content:', $el.text());
     });
 
-    // Confirm translation appeared
     cy.get('#translatedCodeBlock', { timeout: 40000 })
       .should('not.contain', 'Translation will appear here...')
       .and('not.be.empty');
