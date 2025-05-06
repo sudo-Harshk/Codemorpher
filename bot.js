@@ -32,7 +32,7 @@ const uploadWaitingUsers = new Map();
 const lastExtractedCode = new Map();
 const translationWaitingUsers = new Map();
 
-// Health check for server
+// Health check for server --> lookout
 app.get('/health', (_, res) => {
   res.status(200).send('OK');
 });
