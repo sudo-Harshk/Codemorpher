@@ -1,17 +1,30 @@
-// bot.js
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const FormData = require('form-data');
+const http = require('http'); // For health check
 const { logBotEvent } = require('./firebase/logService.js');
 
-const { BOT_TOKEN, BACKEND_URL } = process.env;
+const { BOT_TOKEN, BACKEND_URL, PORT = 3000 } = process.env;
 if (!BOT_TOKEN || !BACKEND_URL) {
   console.error('❌ BOT_TOKEN or BACKEND_URL not set in .env');
   process.exit(1);
 }
+
+// Start a health check HTTP server
+http.createServer((req, res) => {
+  if (req.url === '/health') {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('OK');
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
+}).listen(PORT, () => {
+  console.log(`🌐 Health check running on port ${PORT}`);
+});
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 const uploadWaitingUsers = new Map();
@@ -27,7 +40,6 @@ bot.on('polling_error', async (err) => {
 async function runTimerUntilDone(chatId, startText, endText, asyncFn) {
   const sent = await bot.sendMessage(chatId, `${startText} (0s)`);
   const messageId = sent.message_id;
-
   let seconds = 0;
   let done = false;
 
@@ -172,7 +184,6 @@ bot.on('message', async (msg) => {
         language: 'N/A'
       });
 
-      // Skip Translate button if it's a fallback or error-like message
       if (
         javaCode.toLowerCase().includes('there is no text') ||
         javaCode.toLowerCase().includes('i cannot return any text')
