@@ -1,12 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const fs = require('fs'); // Import synchronous fs
-const fsPromises = require('fs').promises; // Import promise-based fs separately
+const fs = require('fs'); 
+const fsPromises = require('fs').promises; 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Create uploads directory if it doesn't exist
 const uploadDir = 'uploads/';
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);

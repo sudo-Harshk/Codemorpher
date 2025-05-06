@@ -21,6 +21,28 @@ async function logTranslation(sessionId, data, status = "success", engineUsed = 
     console.error("❌ Firestore log error:", error.message);
   }
 }
+async function logBotEvent(sessionId, data) {
+  try {
+    const timestamp = new Date().toISOString();
+
+    await db.collection("telegram_logs").doc(sessionId).set({
+      sessionId,
+      chatId: data.chatId,
+      action: data.action,
+      result: data.result,
+      language: data.language || 'N/A',
+      ...(data.image === 'photo' ? { image: 'photo' } : {}),
+      error: data.error || null,
+      timestamp
+    });
+
+    console.log(`🤖 Logged bot event [${sessionId}] to Firestore`);
+  } catch (error) {
+    console.error("❌ Failed to log bot event:", error.message);
+  }
+}
+
+
 
 async function logError(sessionId, javaCode, targetLanguage, errorMessage) {
   try {
@@ -42,4 +64,4 @@ async function logError(sessionId, javaCode, targetLanguage, errorMessage) {
   }
 }
 
-module.exports = { logTranslation, logError };
+module.exports = { logTranslation, logError, logBotEvent };
