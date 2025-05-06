@@ -5,7 +5,7 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const FormData = require('form-data');
-const { logBotEvent } = require('../codemorpher-backend/firebase/logService');
+const { logBotEvent } = require('./firebase/logService.js');
 
 const { BOT_TOKEN, BACKEND_URL } = process.env;
 if (!BOT_TOKEN || !BACKEND_URL) {
