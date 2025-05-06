@@ -30,9 +30,9 @@ Thumbs.db
 **/firebase*.json
 **/firebaseInit.js
 
-# Optional: coverage from testing tools
+# coverage from testing tools
 **/coverage/
 **/coverage-final.json
 
-# Optional: ignore the Telegram bot if not needed in GitHub
+# ignore the Telegram bot if not needed in GitHub
 codemorpher-telegram-bot/
