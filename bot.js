@@ -369,7 +369,7 @@ bot.on('message', async (msg) => {
       }
 
       lastExtractedCode.set(chatId, javaCode);
-      await bot.sendMessage(chatId, `✅ Extracted Java code:\n\`\`\`\n${javaCode.trim()}\n\`\`\``,mu, {
+      await bot.sendMessage(chatId, `✅ Extracted Java code:\n\`\`\`\n${javaCode.trim()}\n\`\`\``, {
         parse_mode: 'Markdown',
       });
 
