@@ -135,7 +135,7 @@ async function sendStartMessage(chatId, bot, logBotEvent, targetLanguage) {
           try {
             // Send formatted context-oriented message
             await bot.editMessageText(
-              `✅ *Translation Complete!*  \nYour code is now in *${targetLanguage}*! 🚀  \nWant to try another language or upload an image with Java code?  \n🔁 Use /translate to convert Java code to another language.  \n🖼️ Use /upload to extract Java code from an image.`,
+              `\nYou can:\n🔁 Use /translate to convert Java code to another language.\n🖼️ Use /upload to extract Java code from an image.`,
               {
                 chat_id: chatId,
                 message_id: messageId,
