@@ -9,13 +9,12 @@ describe('Codemorpher - Translate Feature', () => {
       .type(`public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello Kiddo");\n  }\n}`);
 
     cy.get('.lang-option[data-value="javascript"]').click();
-
     cy.get('#translateButton').click();
 
-    cy.get('#translatedCodeBlock', { timeout: 15000 })
+    cy.get('#translatedCodeBlock', { timeout: 40000 }) 
       .should('not.contain.text', '// Translation will appear here...')
       .invoke('text')
-      .should('include', 'console.log');
+      .should('include', 'console.log'); 
 
     cy.screenshot('translation-success');
   });

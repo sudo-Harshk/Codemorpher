@@ -2,19 +2,30 @@
   "name": "codemorpher-frontend",
   "version": "1.0.0",
   "description": "Codemorpher - Java to Multi-language Converter Frontend",
+  
   "scripts": {
-    "test": "cypress open",
-    "cypress:run": "cypress run --reporter mochawesome --reporter-options reportDir=cypress/reports/mocha,overwrite=false,html=false,json=true,screenshots=true",
-    "clean:reports": "rimraf cypress/reports",
-    "report:merge": "npx mochawesome-merge \"cypress/reports/mocha/*.json\" > cypress/reports/mochawesome.json",
-    "report:generate": "npx marge cypress/reports/mochawesome.json --reportDir D:\\Mini-Projects\\codemorpher\\codemorpher-frontend\\cypress\\reports\\html --inline",
-    "test:report": "npm run clean:reports && npm run cypress:run && npm run report:merge && npm run report:generate && start D:\\Mini-Projects\\codemorpher\\codemorpher-frontend\\cypress\\reports\\html\\cypress\\reports\\mochawesome.html"
-  },
+  "test": "npx cypress run",
+  "posttest": "npm run report:merge && npm run report:generate && npm run report:open",
+
+  "cypress:run": "cypress run --reporter mochawesome --reporter-options reportDir=cypress/reports/mochawesome,overwrite=false,html=false,json=true,screenshots=true",
+
+  "clean:reports": "rimraf cypress/reports mochawesome.json",
+
+  "report:merge": "npx mochawesome-merge cypress/reports/mochawesome/*.json > mochawesome.json",
+
+  "report:generate": "npx marge mochawesome.json --reportDir cypress/reports/html --inline",
+
+  "report:open": "start cypress/reports/html/mochawesome.html",
+
+  "test:report": "npm run clean:reports && npm run cypress:run && npm run posttest"
+},
+
+
   "devDependencies": {
     "cypress": "^14.3.2",
     "cypress-file-upload": "^5.0.8",
     "mochawesome": "^7.1.3",
-    "mochawesome-merge": "^4.2.0",
+    "mochawesome-merge": "^4.4.1",
     "mochawesome-report-generator": "^6.2.0",
     "rimraf": "^5.0.5"
   }
