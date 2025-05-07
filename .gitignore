@@ -1,13 +1,27 @@
+<<<<<<< HEAD
 # Ignore node_modules
 node_modules/
 **/node_modules/
 
+=======
+>>>>>>> d193e9473865d6567c20627e3a582ffe1363371e
 # Ignore environment variables
 .env
 .env.*
 
+<<<<<<< HEAD
 # Logs
 logs
+=======
+# Node.js dependencies
+**/node_modules/
+
+# Build output
+**/dist/
+**/build/
+
+# Logs
+>>>>>>> d193e9473865d6567c20627e3a582ffe1363371e
 **/logs/
 *.log
 npm-debug.log*
@@ -17,6 +31,7 @@ yarn-error.log*
 # OS and Editor specific
 .DS_Store
 Thumbs.db
+<<<<<<< HEAD
 *.swp
 *.swo
 .vscode/
@@ -26,6 +41,11 @@ Thumbs.db
 **/dist/
 **/build/
 
+=======
+.vscode/
+.idea/
+
+>>>>>>> d193e9473865d6567c20627e3a582ffe1363371e
 # Cypress test output (optional, frontend)
 **/cypress/videos/
 **/cypress/screenshots/
@@ -34,6 +54,7 @@ Thumbs.db
 **/firebase*.json
 **/firebaseInit.js
 
+<<<<<<< HEAD
 # Optional: coverage from testing tools
 **/coverage/
 **/coverage-final.json
@@ -43,3 +64,11 @@ codemorpher-telegram-bot/
 
 # Ignore generated files
 temp.jpg
+=======
+# coverage from testing tools
+**/coverage/
+**/coverage-final.json
+
+# ignore the Telegram bot if not needed in GitHub
+codemorpher-telegram-bot/
+>>>>>>> d193e9473865d6567c20627e3a582ffe1363371e
