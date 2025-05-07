@@ -322,6 +322,10 @@ bot.on('message', async (msg) => {
 
       fs.unlink(localPath, () => {});
       const sessionId = `upload-${Date.now()}`;
+
+      // Log the raw response for debugging
+      console.log(`[DEBUG] Raw backend response:`, JSON.stringify(result.data, null, 2));
+
       let { javaCode, error, extractedText } = result.data;
 
       // Handle string response (Java code detected)
@@ -331,8 +335,13 @@ bot.on('message', async (msg) => {
         extractedText = null;
       }
 
-      // Handle "no text" case
-      if (extractedText && extractedText.toLowerCase().includes('there is no text')) {
+      // Handle "no text" case with broader matching
+      if (extractedText && (
+        extractedText.toLowerCase().includes('there is no text') ||
+        extractedText.toLowerCase().includes('no text') ||
+        extractedText.toLowerCase().includes('text not found') ||
+        extractedText.toLowerCase().includes('empty image')
+      )) {
         await logBotEvent(sessionId, {
           chatId,
           action: 'image_upload',
@@ -360,7 +369,7 @@ bot.on('message', async (msg) => {
       }
 
       lastExtractedCode.set(chatId, javaCode);
-      await bot.sendMessage(chatId, `✅ Extracted Java code:\n\`\`\`\n${javaCode.trim()}\n\`\`\``, {
+      await bot.sendMessage(chatId, `✅ Extracted Java code:\n\`\`\`\n${javaCode.trim()}\n\`\`\``,mu, {
         parse_mode: 'Markdown',
       });
 
@@ -392,6 +401,20 @@ bot.on('message', async (msg) => {
         language: 'N/A',
         error: err.message,
       });
+
+      // Check if the error might be related to "no text"
+      const errorMessage = err.message.toLowerCase();
+      if (
+        errorMessage.includes('no text') ||
+        errorMessage.includes('text not found') ||
+        errorMessage.includes('empty image')
+      ) {
+        return bot.sendMessage(
+          chatId,
+          `ℹ️ There is no text in the image. Therefore, I return nothing.`
+        );
+      }
+
       bot.sendMessage(chatId, `❌ Failed to process the image: ${err.message}`);
     }
   }
