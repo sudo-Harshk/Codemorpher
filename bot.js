@@ -321,12 +321,18 @@ bot.on('message', async (msg) => {
       );
 
       fs.unlink(localPath, () => {});
-      const { javaCode, error, extractedText } = result.data;
       const sessionId = `upload-${Date.now()}`;
+      let { javaCode, error, extractedText } = result.data;
 
-      // Always display extractedText if present
-      if (extractedText && !javaCode && !error) {
-        // Case: No text in image (e.g., "There is no text in the image...")
+      // Handle string response (Java code detected)
+      if (typeof result.data === 'string') {
+        javaCode = result.data;
+        error = null;
+        extractedText = null;
+      }
+
+      // Handle "no text" case
+      if (extractedText && extractedText.toLowerCase().includes('there is no text')) {
         await logBotEvent(sessionId, {
           chatId,
           action: 'image_upload',
@@ -337,6 +343,7 @@ bot.on('message', async (msg) => {
         return bot.sendMessage(chatId, `ℹ️ ${extractedText}`);
       }
 
+      // Handle error or no Java code
       if (error || !javaCode) {
         await logBotEvent(sessionId, {
           chatId,
@@ -466,7 +473,7 @@ async function startTranslation(chatId, javaCode, targetLanguage) {
       chatId,
       action: 'translate',
       result: 'error',
-      language: 'N/A',
+      language: targetLanguage,
       error: err.message,
     });
     await bot.sendMessage(chatId, '❌ Failed to translate. Please try again.');
