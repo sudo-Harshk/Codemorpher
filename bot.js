@@ -15,10 +15,11 @@ const {
   BACKEND_URL,
   PORT = 3000,
   RENDER_EXTERNAL_URL,
+  OPENROUTER_API_KEY,
 } = process.env;
 
-if (!BOT_TOKEN || !BACKEND_URL || !RENDER_EXTERNAL_URL) {
-  console.error('❌ BOT_TOKEN, BACKEND_URL, or RENDER_EXTERNAL_URL not set in .env');
+if (!BOT_TOKEN || !BACKEND_URL || !RENDER_EXTERNAL_URL || !OPENROUTER_API_KEY) {
+  console.error('❌ BOT_TOKEN, BACKEND_URL, RENDER_EXTERNAL_URL, or OPENROUTER_API_KEY not set in .env');
   process.exit(1);
 }
 
@@ -85,20 +86,17 @@ async function runTimerUntilDone(chatId, startText, endText, asyncFn) {
 async function sendStartMessage(chatId, bot, logBotEvent) {
   const sessionId = `context-message-${Date.now()}`;
   try {
-    // Check if a countdown is already active for this chat
     if (activeCountdowns.has(chatId)) {
       console.log(`Skipped new countdown for chat ${chatId}; countdown already active`);
       return;
     }
 
-    // Log countdown initiation
     await logBotEvent(sessionId, {
       chatId,
       action: 'start_countdown',
       result: 'initiated',
     });
 
-    // Send initial countdown message
     const sent = await bot.sendMessage(chatId, `⏳ Feature reminder in 15 seconds...`);
     const messageId = sent.message_id;
     activeCountdowns.set(chatId, { messageId, sessionId });
@@ -106,7 +104,6 @@ async function sendStartMessage(chatId, bot, logBotEvent) {
     let seconds = 15;
     let done = false;
 
-    // Countdown interval
     const interval = setInterval(async () => {
       if (!done) {
         seconds--;
@@ -118,7 +115,6 @@ async function sendStartMessage(chatId, bot, logBotEvent) {
             });
           } catch (err) {
             console.error(`Failed to update countdown for chat ${chatId}:`, err.message);
-            // Log error but continue countdown
             await logBotEvent(sessionId, {
               chatId,
               action: 'update_countdown',
@@ -131,25 +127,17 @@ async function sendStartMessage(chatId, bot, logBotEvent) {
           clearInterval(interval);
           activeCountdowns.delete(chatId);
           try {
-            // Edit countdown message to "Cooldown Period Completed"
             await bot.editMessageText(
               `Cooldown Period Completed ✅`,
-              {
-                chat_id: chatId,
-                message_id: messageId,
-              }
+              { chat_id: chatId, message_id: messageId }
             );
 
-            // Send the second message with options
             await bot.sendMessage(
               chatId,
               `Now You can:  \n🔁 Use /translate to convert Java code to another language.  \n🖼️ Use /upload to extract Java code from an image.`,
-              {
-                parse_mode: 'Markdown',
-              }
+              { parse_mode: 'Markdown' }
             );
 
-            // Log successful context messages
             await logBotEvent(sessionId, {
               chatId,
               action: 'send_context_message',
@@ -168,15 +156,13 @@ async function sendStartMessage(chatId, bot, logBotEvent) {
       }
     }, 1000);
 
-    // Ensure countdown stops if interrupted (e.g., bot restart)
     setTimeout(() => {
       if (!done) {
         done = true;
         clearInterval(interval);
         activeCountdowns.delete(chatId);
       }
-    }, 16000); // Slightly longer than 15 seconds to ensure cleanup
-
+    }, 16000);
   } catch (err) {
     console.error(`Failed to initiate countdown for chat ${chatId}:`, err.message);
     activeCountdowns.delete(chatId);
@@ -186,7 +172,60 @@ async function sendStartMessage(chatId, bot, logBotEvent) {
       result: 'error',
       error: err.message,
     });
-    // Continue without crashing
+  }
+}
+
+// Function to validate Java code using OpenRouter API
+async function validateJavaCode(chatId, code, logBotEvent) {
+  const sessionId = `validate-java-${Date.now()}`;
+  try {
+    const response = await axios.post(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        model: 'meta-llama/llama-4-maverick:free',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a code detection assistant. Determine if the following text is Java code. Respond with "Yes, this is Java code" if it is, or "No, this is not Java code" if it isn’t.',
+          },
+          {
+            role: 'user',
+            content: code,
+          },
+        ],
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'HTTP-Referer': RENDER_EXTERNAL_URL,
+          'X-Title': 'Codemorpher Bot',
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const result = response.data.choices[0].message.content;
+    await logBotEvent(sessionId, {
+      chatId,
+      action: 'validate_java_code',
+      result: 'success',
+      response: result,
+    });
+
+    return result.includes('Yes, this is Java code');
+  } catch (err) {
+    console.error(`Failed to validate Java code for chat ${chatId}:`, err.message);
+    await logBotEvent(sessionId, {
+      chatId,
+      action: 'validate_java_code',
+      result: 'error',
+      error: err.message,
+    });
+
+    // Fallback to basic validation
+    const hasClass = /\bclass\b/i.test(code);
+    const hasBraces = /\{.*\}/.test(code);
+    return hasClass && hasBraces;
   }
 }
 
@@ -200,7 +239,10 @@ bot.on('message', async (msg) => {
     : 'text';
 
   if (msg.text === '/start' || msg.text === '/help') {
-    return bot.sendMessage(chatId, `👋 Welcome to Codemorpher Bot!\n\nYou can:\n🔁 Use /translate to convert Java code to another language.\n🖼️ Use /upload to extract Java code from an image.`);
+    return bot.sendMessage(
+      chatId,
+      `👋 Welcome to Codemorpher Bot!\n\nYou can:\n🔁 Use /translate to convert Java code to another language.\n🖼️ Use /upload to extract Java code from an image.`
+    );
   }
 
   if (msg.text === '/upload') {
@@ -209,15 +251,40 @@ bot.on('message', async (msg) => {
   }
 
   if (msg.text === '/translate') {
-    translationWaitingUsers.set(chatId, true);
-    return bot.sendMessage(chatId, '📝 Please send your *Java code*.', {
-      parse_mode: 'Markdown',
-    });
+    translationWaitingUsers.set(chatId, { waiting: true, source: 'direct' });
+    return bot.sendMessage(
+      chatId,
+      '📝 Please send your *Java code*. For example:\n```\npublic class Hello {\n    public static void main(String[] args) {\n        System.out.println("Hello!");\n    }\n}\n```',
+      { parse_mode: 'Markdown' }
+    );
   }
 
   if (translationWaitingUsers.has(chatId) && msg.text && !msg.text.startsWith('/')) {
+    const userState = translationWaitingUsers.get(chatId);
+    const userInput = msg.text.trim();
+
+    // If the source is 'upload', skip validation (already validated during /upload)
+    if (userState.source === 'upload') {
+      translationWaitingUsers.delete(chatId);
+      return askForLanguage(chatId, userInput);
+    }
+
+    // For direct /translate, validate using the API
+    const checkingMessage = await bot.sendMessage(chatId, '⏳ Checking your code...');
+    const isJava = await validateJavaCode(chatId, userInput, logBotEvent);
+
+    await bot.deleteMessage(chatId, checkingMessage.message_id);
+
+    if (!isJava) {
+      // Keep the user in the translation flow
+      return bot.sendMessage(
+        chatId,
+        '⚠️ That doesn\'t look like Java code. Please send valid Java code to translate!'
+      );
+    }
+
     translationWaitingUsers.delete(chatId);
-    return askForLanguage(chatId, msg.text);
+    return askForLanguage(chatId, userInput);
   }
 
   const isPhoto = !!msg.photo;
@@ -328,7 +395,9 @@ bot.on('callback_query', async (query) => {
     if (!code) {
       return bot.sendMessage(chatId, '⚠️ No extracted code available.');
     }
-    askForLanguage(chatId, code);
+    // Set source to 'upload' to skip API validation
+    translationWaitingUsers.set(chatId, { waiting: true, source: 'upload' });
+    return askForLanguage(chatId, code);
   }
 
   bot.answerCallbackQuery(query.id);
@@ -382,14 +451,11 @@ async function startTranslation(chatId, javaCode, targetLanguage) {
       language: targetLanguage,
     });
 
-    // Send translated code
     await bot.sendMessage(chatId, `📄 *Translated Code:*\n\`\`\`\n${translatedCode.trim()}\n\`\`\``, {
       parse_mode: 'Markdown',
     });
 
-    // Send context-oriented messages after a 15-second countdown
     await sendStartMessage(chatId, bot, logBotEvent);
-
   } catch (err) {
     await logBotEvent(sessionId, {
       chatId,
