@@ -243,6 +243,9 @@ bot.on('message', async (msg) => {
   }
 
   if (msg.text === '/translate') {
+    // Clear previous states to ensure a fresh translation process
+    translationWaitingUsers.delete(chatId);
+    lastExtractedCode.delete(chatId);
     translationWaitingUsers.set(chatId, { waiting: true, source: 'direct' });
     return bot.sendMessage(
       chatId,
@@ -490,6 +493,8 @@ async function startTranslation(chatId, javaCode, targetLanguage) {
       parse_mode: 'Markdown',
     });
 
+    // Clear lastExtractedCode after translation to prevent reuse
+    lastExtractedCode.delete(chatId);
     await sendStartMessage(chatId, bot, logBotEvent);
   } catch (err) {
     await logBotEvent(sessionId, {
@@ -500,6 +505,8 @@ async function startTranslation(chatId, javaCode, targetLanguage) {
       error: err.message,
     });
     await bot.sendMessage(chatId, '❌ Failed to translate. Please try again.');
+    // Clear lastExtractedCode even if translation fails
+    lastExtractedCode.delete(chatId);
     await sendStartMessage(chatId, bot, logBotEvent);
   }
 }
