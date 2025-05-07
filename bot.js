@@ -23,7 +23,6 @@ if (!BOT_TOKEN || !BACKEND_URL || !RENDER_EXTERNAL_URL || !OPENROUTER_API_KEY) {
   process.exit(1);
 }
 
-// Initialize bot with webhook
 const bot = new TelegramBot(BOT_TOKEN);
 const webhookPath = `/bot${BOT_TOKEN}`;
 bot.setWebHook(`${RENDER_EXTERNAL_URL}${webhookPath}`);
@@ -32,20 +31,17 @@ console.log(`✅ Webhook set at ${RENDER_EXTERNAL_URL}${webhookPath}`);
 const uploadWaitingUsers = new Map();
 const lastExtractedCode = new Map();
 const translationWaitingUsers = new Map();
-const activeCountdowns = new Map(); // Track active countdowns per chatId
+const activeCountdowns = new Map();
 
-// Health check for server
 app.get('/health', (_, res) => {
   res.status(200).send('OK');
 });
 
-// Handle incoming Telegram updates
 app.post(webhookPath, (req, res) => {
   bot.processUpdate(req.body);
   res.sendStatus(200);
 });
 
-// Timer function for user-friendly progress
 async function runTimerUntilDone(chatId, startText, endText, asyncFn) {
   const sent = await bot.sendMessage(chatId, `${startText} (0s)`);
   const messageId = sent.message_id;
@@ -82,7 +78,6 @@ async function runTimerUntilDone(chatId, startText, endText, asyncFn) {
   }
 }
 
-// Helper function to send context-oriented messages after a 15-second countdown
 async function sendStartMessage(chatId, bot, logBotEvent) {
   const sessionId = `context-message-${Date.now()}`;
   try {
@@ -175,7 +170,6 @@ async function sendStartMessage(chatId, bot, logBotEvent) {
   }
 }
 
-// Function to validate Java code using OpenRouter API
 async function validateJavaCode(chatId, code, logBotEvent) {
   const sessionId = `validate-java-${Date.now()}`;
   try {
@@ -222,14 +216,12 @@ async function validateJavaCode(chatId, code, logBotEvent) {
       error: err.message,
     });
 
-    // Fallback to basic validation
     const hasClass = /\bclass\b/i.test(code);
     const hasBraces = /\{.*\}/.test(code);
     return hasClass && hasBraces;
   }
 }
 
-// Handle all messages
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const type = msg.photo
@@ -263,20 +255,17 @@ bot.on('message', async (msg) => {
     const userState = translationWaitingUsers.get(chatId);
     const userInput = msg.text.trim();
 
-    // If the source is 'upload', skip validation (already validated during /upload)
     if (userState.source === 'upload') {
       translationWaitingUsers.delete(chatId);
       return askForLanguage(chatId, userInput);
     }
 
-    // For direct /translate, validate using the API
     const checkingMessage = await bot.sendMessage(chatId, '⏳ Checking your code...');
     const isJava = await validateJavaCode(chatId, userInput, logBotEvent);
 
     await bot.deleteMessage(chatId, checkingMessage.message_id);
 
     if (!isJava) {
-      // Keep the user in the translation flow
       return bot.sendMessage(
         chatId,
         '⚠️ That doesn\'t look like Java code. Please send valid Java code to translate!'
@@ -335,6 +324,19 @@ bot.on('message', async (msg) => {
       const { javaCode, error, extractedText } = result.data;
       const sessionId = `upload-${Date.now()}`;
 
+      // Always display extractedText if present
+      if (extractedText && !javaCode && !error) {
+        // Case: No text in image (e.g., "There is no text in the image...")
+        await logBotEvent(sessionId, {
+          chatId,
+          action: 'image_upload',
+          result: 'no_text',
+          image: 'photo',
+          language: 'N/A',
+        });
+        return bot.sendMessage(chatId, `ℹ️ ${extractedText}`);
+      }
+
       if (error || !javaCode) {
         await logBotEvent(sessionId, {
           chatId,
@@ -342,9 +344,12 @@ bot.on('message', async (msg) => {
           result: 'error',
           image: 'photo',
           language: 'N/A',
-          error,
+          error: error || 'No Java code detected',
         });
-        return bot.sendMessage(chatId, `⚠️ No Java code detected.\nExtracted Text:\n${extractedText || 'None'}`);
+        return bot.sendMessage(
+          chatId,
+          `⚠️ No Java code detected.\nExtracted Text:\n${extractedText || 'None'}`
+        );
       }
 
       lastExtractedCode.set(chatId, javaCode);
@@ -380,12 +385,11 @@ bot.on('message', async (msg) => {
         language: 'N/A',
         error: err.message,
       });
-      bot.sendMessage(chatId, '❌ Failed to process the image.');
+      bot.sendMessage(chatId, `❌ Failed to process the image: ${err.message}`);
     }
   }
 });
 
-// Handle button click
 bot.on('callback_query', async (query) => {
   const chatId = query.message.chat.id;
   const action = query.data;
@@ -395,7 +399,6 @@ bot.on('callback_query', async (query) => {
     if (!code) {
       return bot.sendMessage(chatId, '⚠️ No extracted code available.');
     }
-    // Set source to 'upload' to skip API validation
     translationWaitingUsers.set(chatId, { waiting: true, source: 'upload' });
     return askForLanguage(chatId, code);
   }
@@ -403,23 +406,24 @@ bot.on('callback_query', async (query) => {
   bot.answerCallbackQuery(query.id);
 });
 
-// Language choice
 function askForLanguage(chatId, code) {
-  bot.sendMessage(chatId, '🌐 Choose a target language:', {
-    reply_markup: {
-      keyboard: [['Python', 'JavaScript'], ['C', 'C++'], ['C#', 'PHP']],
-      one_time_keyboard: true,
-      resize_keyboard: true,
-    },
-  });
+  return new Promise((resolve) => {
+    bot.sendMessage(chatId, '🌐 Choose a target language:', {
+      reply_markup: {
+        keyboard: [['Python', 'JavaScript'], ['C', 'C++'], ['C#', 'PHP']],
+        one_time_keyboard: true,
+        resize_keyboard: true,
+      },
+    });
 
-  bot.once('message', async (langMsg) => {
-    const targetLanguage = langMsg.text;
-    startTranslation(chatId, code, targetLanguage);
+    bot.once('message', async (langMsg) => {
+      const targetLanguage = langMsg.text;
+      await startTranslation(chatId, code, targetLanguage);
+      resolve();
+    });
   });
 }
 
-// Translate code
 async function startTranslation(chatId, javaCode, targetLanguage) {
   const sessionId = `translate-${Date.now()}`;
   try {
@@ -441,7 +445,8 @@ async function startTranslation(chatId, javaCode, targetLanguage) {
     }
 
     if (!translatedCode || typeof translatedCode !== 'string') {
-      return bot.sendMessage(chatId, '⚠️ Invalid translation received.');
+      await bot.sendMessage(chatId, '⚠️ Invalid translation received.');
+      return;
     }
 
     await logBotEvent(sessionId, {
@@ -461,14 +466,14 @@ async function startTranslation(chatId, javaCode, targetLanguage) {
       chatId,
       action: 'translate',
       result: 'error',
-      language: targetLanguage,
+      language: 'N/A',
       error: err.message,
     });
-    bot.sendMessage(chatId, '❌ Failed to translate. Please try again.');
+    await bot.sendMessage(chatId, '❌ Failed to translate. Please try again.');
+    await sendStartMessage(chatId, bot, logBotEvent);
   }
 }
 
-// Start the Express server
 app.listen(PORT, () => {
   console.log(`🚀 Server listening on port ${PORT}`);
 });
