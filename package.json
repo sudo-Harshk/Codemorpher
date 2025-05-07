@@ -17,6 +17,7 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "firebase-admin": "^13.3.0",
+    "git-filter-repo": "^0.0.30",
     "node-telegram-bot-api": "^0.66.0"
   }
 }
