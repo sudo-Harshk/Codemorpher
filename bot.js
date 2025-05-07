@@ -135,14 +135,14 @@ async function sendStartMessage(chatId, bot, logBotEvent, targetLanguage) {
           try {
             // Send formatted context-oriented message
             await bot.editMessageText(
-              `\nYou can:\n🔁 Use /translate to convert Java code to another language.\n🖼️ Use /upload to extract Java code from an image.`,
+              `Cooldown Period Completed ✅\n Now You can:\n🔁 Use /translate to convert Java code to another language.\n🖼️ Use /upload to extract Java code from an image.`,
               {
                 chat_id: chatId,
                 message_id: messageId,
                 parse_mode: 'Markdown',
               }
             );
-            // Log successful context message
+            // Log successful context message 
             await logBotEvent(sessionId, {
               chatId,
               action: 'send_context_message',
