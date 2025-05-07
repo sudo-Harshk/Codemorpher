@@ -81,8 +81,8 @@ async function runTimerUntilDone(chatId, startText, endText, asyncFn) {
   }
 }
 
-// Helper function to send context-oriented message after a 15-second countdown
-async function sendStartMessage(chatId, bot, logBotEvent, targetLanguage) {
+// Helper function to send context-oriented messages after a 15-second countdown
+async function sendStartMessage(chatId, bot, logBotEvent) {
   const sessionId = `context-message-${Date.now()}`;
   try {
     // Check if a countdown is already active for this chat
@@ -96,7 +96,6 @@ async function sendStartMessage(chatId, bot, logBotEvent, targetLanguage) {
       chatId,
       action: 'start_countdown',
       result: 'initiated',
-      language: targetLanguage,
     });
 
     // Send initial countdown message
@@ -125,7 +124,6 @@ async function sendStartMessage(chatId, bot, logBotEvent, targetLanguage) {
               action: 'update_countdown',
               result: 'error',
               error: err.message,
-              language: targetLanguage,
             });
           }
         } else {
@@ -133,30 +131,37 @@ async function sendStartMessage(chatId, bot, logBotEvent, targetLanguage) {
           clearInterval(interval);
           activeCountdowns.delete(chatId);
           try {
-            // Send formatted context-oriented message
+            // Edit countdown message to "Cooldown Period Completed"
             await bot.editMessageText(
-              `Cooldown Period Completed ✅\n Now You can:\n🔁 Use /translate to convert Java code to another language.\n🖼️ Use /upload to extract Java code from an image.`,
+              `Cooldown Period Completed ✅`,
               {
                 chat_id: chatId,
                 message_id: messageId,
+              }
+            );
+
+            // Send the second message with options
+            await bot.sendMessage(
+              chatId,
+              `Now You can:  \n🔁 Use /translate to convert Java code to another language.  \n🖼️ Use /upload to extract Java code from an image.`,
+              {
                 parse_mode: 'Markdown',
               }
             );
-            // Log successful context message 
+
+            // Log successful context messages
             await logBotEvent(sessionId, {
               chatId,
               action: 'send_context_message',
               result: 'success',
-              language: targetLanguage,
             });
           } catch (err) {
-            console.error(`Failed to send context message for chat ${chatId}:`, err.message);
+            console.error(`Failed to send context messages for chat ${chatId}:`, err.message);
             await logBotEvent(sessionId, {
               chatId,
               action: 'send_context_message',
               result: 'error',
               error: err.message,
-              language: targetLanguage,
             });
           }
         }
@@ -180,7 +185,6 @@ async function sendStartMessage(chatId, bot, logBotEvent, targetLanguage) {
       action: 'start_countdown',
       result: 'error',
       error: err.message,
-      language: targetLanguage,
     });
     // Continue without crashing
   }
@@ -383,8 +387,8 @@ async function startTranslation(chatId, javaCode, targetLanguage) {
       parse_mode: 'Markdown',
     });
 
-    // Send context-oriented message after a 15-second countdown
-    await sendStartMessage(chatId, bot, logBotEvent, targetLanguage);
+    // Send context-oriented messages after a 15-second countdown
+    await sendStartMessage(chatId, bot, logBotEvent);
 
   } catch (err) {
     await logBotEvent(sessionId, {
