@@ -133,12 +133,13 @@ async function sendStartMessage(chatId, bot, logBotEvent, targetLanguage) {
           clearInterval(interval);
           activeCountdowns.delete(chatId);
           try {
-            // Send context-oriented message
+            // Send formatted context-oriented message
             await bot.editMessageText(
-              `✅ Your code was translated to ${targetLanguage}! Want to translate it to another language or upload an image with Java code? Use /translate or /upload to keep coding!`,
+              `✅ *Translation Complete!*  \nYour code is now in *${targetLanguage}*! 🚀  \nWant to try another language or upload an image with Java code?  \n🔁 Use /translate to convert Java code to another language.  \n🖼️ Use /upload to extract Java code from an image.`,
               {
                 chat_id: chatId,
                 message_id: messageId,
+                parse_mode: 'Markdown',
               }
             );
             // Log successful context message
