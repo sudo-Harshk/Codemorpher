@@ -6,7 +6,7 @@ Codemorpher is a full-stack web application that allows users to input Java code
 
 - Frontend: https://monumental-peony-b9a6b3.netlify.app
 - Backend API (Ping): https://codemorpher-backend.onrender.com/ping
-- Telegram Bot: @CodemorpherAIbot
+- Telegram Bot: [@CodemorpherAIbot](https://t.me/CodemorpherAIbot)
 
 ## 🚀 Features
 
@@ -131,8 +131,4 @@ The bot uses Meta Llama to validate Java code and Google's Gemini API for image 
 2. Create your feature branch: `git checkout -b feature/my-feature`
 3. Commit your changes: `git commit -m "✨ Add my feature"`
 4. Push to the branch: `git push origin feature/my-feature`
-<<<<<<< HEAD
 5. Open a Pull Request ✅
-=======
-5. Open a Pull Request ✅
->>>>>>> d193e9473865d6567c20627e3a582ffe1363371e
