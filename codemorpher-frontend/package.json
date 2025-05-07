@@ -2,25 +2,22 @@
   "name": "codemorpher-frontend",
   "version": "1.0.0",
   "description": "Codemorpher - Java to Multi-language Converter Frontend",
-  
   "scripts": {
-  "test": "npx cypress run",
-  "posttest": "npm run report:merge && npm run report:generate && npm run report:open",
+    "test": "npx cypress run",
+    "posttest": "npm run report:merge && npm run report:generate && npm run report:open",
 
-  "cypress:run": "cypress run --reporter mochawesome --reporter-options reportDir=cypress/reports/mochawesome,overwrite=false,html=false,json=true,screenshots=true",
+    "cypress:run": "cypress run --reporter mochawesome --reporter-options reportDir=cypress/reports/mochawesome,overwrite=false,html=false,json=true,screenshots=true",
 
-  "clean:reports": "rimraf cypress/reports mochawesome.json",
+    "clean:reports": "rimraf cypress/reports mochawesome.json",
 
-  "report:merge": "npx mochawesome-merge cypress/reports/mochawesome/*.json > mochawesome.json",
+    "report:merge": "npx mochawesome-merge cypress/reports/mochawesome/*.json > mochawesome.json",
 
-  "report:generate": "npx marge mochawesome.json --reportDir cypress/reports/html --inline",
+    "report:generate": "node generate-report.js",
 
-  "report:open": "start cypress/reports/html/mochawesome.html",
+   "report:open": "powershell -Command \"$reportPath = Get-ChildItem -Directory -Path cypress/reports/html | Sort-Object LastWriteTime -Descending | Select-Object -First 1; Start-Process chrome ('file:///' + $reportPath.FullName + '/mochawesome.html')\"",
 
-  "test:report": "npm run clean:reports && npm run cypress:run && npm run posttest"
-},
-
-
+    "test:report": "npm run clean:reports && npm run cypress:run && npm run posttest"
+  },
   "devDependencies": {
     "cypress": "^14.3.2",
     "cypress-file-upload": "^5.0.8",

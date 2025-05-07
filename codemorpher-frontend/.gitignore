@@ -21,3 +21,6 @@ yarn-error.log*
 .env
 
 test-images/
+
+cypress/reports/
+mochawesome.json

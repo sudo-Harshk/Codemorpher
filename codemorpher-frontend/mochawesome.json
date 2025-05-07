@@ -12,13 +12,13 @@
     "hasOther": false,
     "skipped": 0,
     "hasSkipped": false,
-    "start": "2025-05-07T13:39:42.246Z",
-    "end": "2025-05-07T13:41:46.677Z",
-    "duration": 124431
+    "start": "2025-05-07T13:59:43.197Z",
+    "end": "2025-05-07T14:01:05.226Z",
+    "duration": 82029
   },
   "results": [
     {
-      "uuid": "59b20035-7e46-401d-9176-713c6745ae94",
+      "uuid": "fbe1d09f-2097-4cb2-8978-10bcdba897ab",
       "title": "",
       "fullFile": "cypress\\e2e\\debug.cy.js",
       "file": "cypress\\e2e\\debug.cy.js",
@@ -27,7 +27,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "a5bd7dbb-f62b-4179-8513-4509faed9b13",
+          "uuid": "76d6dda2-7074-412d-bbd7-243151911ebf",
           "title": "Codemorpher - Debugging Steps Display",
           "fullFile": "",
           "file": "",
@@ -38,7 +38,7 @@
               "title": "should display debugging steps after translation",
               "fullTitle": "Codemorpher - Debugging Steps Display should display debugging steps after translation",
               "timedOut": null,
-              "duration": 8539,
+              "duration": 6857,
               "state": "passed",
               "speed": "medium",
               "pass": true,
@@ -47,20 +47,20 @@
               "context": null,
               "code": "cy.get('#javaCode').clear().type(`public class Main {\\n  public static void main(String[] args) {\\n    System.out.println(\"Debug Test\");\\n  }\\n}`, {\n  parseSpecialCharSequences: false\n});\ncy.get('.lang-option[data-value=\"python\"]').click();\ncy.get('#translateButton').click();\ncy.get('#debuggingSteps', {\n  timeout: 30000\n}).should('not.have.class', 'collapsed');\ncy.get('#debuggingSteps').should('contain.text', 'Debug');\n// Tolerate fallback string or actual list\ncy.get('#debuggingSteps .debug-list').then($ul => {\n  const items = $ul.find('li');\n  expect(items.length).to.be.at.least(0); // not strict\n});\ncy.screenshot('debugging-steps-visible');",
               "err": {},
-              "uuid": "d0156b9c-a324-451b-937e-d6bccd8520b1",
-              "parentUUID": "a5bd7dbb-f62b-4179-8513-4509faed9b13",
+              "uuid": "67549e1a-3d5a-47dd-98e7-47b73a1b2f7d",
+              "parentUUID": "76d6dda2-7074-412d-bbd7-243151911ebf",
               "isHook": false,
               "skipped": false
             }
           ],
           "suites": [],
           "passes": [
-            "d0156b9c-a324-451b-937e-d6bccd8520b1"
+            "67549e1a-3d5a-47dd-98e7-47b73a1b2f7d"
           ],
           "failures": [],
           "pending": [],
           "skipped": [],
-          "duration": 8539,
+          "duration": 6857,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
@@ -76,7 +76,7 @@
       "_timeout": 2000
     },
     {
-      "uuid": "3868447e-e45f-4113-9278-a769292d0689",
+      "uuid": "43fa326f-2cf8-4347-a419-5c89ef5a6e56",
       "title": "",
       "fullFile": "cypress\\e2e\\error.cy.js",
       "file": "cypress\\e2e\\error.cy.js",
@@ -85,7 +85,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "ac7570d2-5547-48ff-90ff-27007b95e8a7",
+          "uuid": "4aa0c776-051d-4ed6-b9a6-42ee0630cf14",
           "title": "Codemorpher - Error Handling Scenarios",
           "fullFile": "",
           "file": "",
@@ -96,7 +96,7 @@
               "title": "should show alert if translate is clicked without input",
               "fullTitle": "Codemorpher - Error Handling Scenarios should show alert if translate is clicked without input",
               "timedOut": null,
-              "duration": 948,
+              "duration": 933,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -105,8 +105,8 @@
               "context": null,
               "code": "cy.get('#javaCode').clear();\ncy.get('#translateButton').click();\ncy.on('window:alert', text => {\n  expect(text).to.include('Please enter code');\n});",
               "err": {},
-              "uuid": "c2a79e2e-cfc4-4c58-b2de-8362de44d1df",
-              "parentUUID": "ac7570d2-5547-48ff-90ff-27007b95e8a7",
+              "uuid": "4225b8e6-dd96-4dbc-beca-96255a453940",
+              "parentUUID": "4aa0c776-051d-4ed6-b9a6-42ee0630cf14",
               "isHook": false,
               "skipped": false
             },
@@ -114,7 +114,7 @@
               "title": "should show network error if server is unreachable",
               "fullTitle": "Codemorpher - Error Handling Scenarios should show network error if server is unreachable",
               "timedOut": null,
-              "duration": 1954,
+              "duration": 1911,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -123,21 +123,21 @@
               "context": null,
               "code": "cy.intercept('POST', '**/translate', {\n  forceNetworkError: true\n}).as('fakeError');\ncy.get('#javaCode').clear().type('public class Test { public static void main(String[] args) {} }', {\n  parseSpecialCharSequences: false\n});\ncy.get('#translateButton').click();\n// Wait for the network error to be triggered\ncy.wait('@fakeError', {\n  timeout: 10000\n});\n// Wait for the loading overlay to appear\ncy.get('#loadingOverlay', {\n  timeout: 10000\n}).should('be.visible');\n// Check the dynamically created .error-message element inside #loadingContent\ncy.get('#loadingContent .error-message', {\n  timeout: 10000\n}).should('be.visible').invoke('text').then(text => {\n  const lower = text.toLowerCase();\n  expect(lower).to.include('connect'); // Matches \"Cannot connect to the server\"\n});\ncy.screenshot('network-error-message');",
               "err": {},
-              "uuid": "45840779-de00-4a20-94e6-f08f3cb0d878",
-              "parentUUID": "ac7570d2-5547-48ff-90ff-27007b95e8a7",
+              "uuid": "55255cb8-cf71-40e1-887f-8df3da5fbbdc",
+              "parentUUID": "4aa0c776-051d-4ed6-b9a6-42ee0630cf14",
               "isHook": false,
               "skipped": false
             }
           ],
           "suites": [],
           "passes": [
-            "c2a79e2e-cfc4-4c58-b2de-8362de44d1df",
-            "45840779-de00-4a20-94e6-f08f3cb0d878"
+            "4225b8e6-dd96-4dbc-beca-96255a453940",
+            "55255cb8-cf71-40e1-887f-8df3da5fbbdc"
           ],
           "failures": [],
           "pending": [],
           "skipped": [],
-          "duration": 2902,
+          "duration": 2844,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
@@ -153,7 +153,7 @@
       "_timeout": 2000
     },
     {
-      "uuid": "cfddb864-b764-4348-9e3c-22cb05c32a46",
+      "uuid": "add4cefc-c917-4797-9e66-0002c3871b2c",
       "title": "",
       "fullFile": "cypress\\e2e\\imageFeature.cy.js",
       "file": "cypress\\e2e\\imageFeature.cy.js",
@@ -162,7 +162,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "6abe6d64-7e6d-45b9-a565-6f7d5b8ac5ad",
+          "uuid": "0c6a58ff-abd9-44fe-8ccf-53abc960b96a",
           "title": "📸 Image Upload & Camera Feature Tests",
           "fullFile": "",
           "file": "",
@@ -173,7 +173,7 @@
               "title": "should display the Skip button when no back camera is available",
               "fullTitle": "📸 Image Upload & Camera Feature Tests should display the Skip button when no back camera is available",
               "timedOut": null,
-              "duration": 466,
+              "duration": 501,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -182,8 +182,8 @@
               "context": null,
               "code": "cy.get('#cameraButton').click();\ncy.get('#cameraError', {\n  timeout: 5000\n}).should('be.visible').and('contain', 'No back camera available');\ncy.get('.skip-button', {\n  timeout: 5000\n}).should('be.visible').and('contain', 'Skip');",
               "err": {},
-              "uuid": "194c32d0-1bc8-4c23-a514-210cd3163435",
-              "parentUUID": "6abe6d64-7e6d-45b9-a565-6f7d5b8ac5ad",
+              "uuid": "f7b714c5-392c-4eef-aab3-dffe7a0507c6",
+              "parentUUID": "0c6a58ff-abd9-44fe-8ccf-53abc960b96a",
               "isHook": false,
               "skipped": false
             },
@@ -191,7 +191,7 @@
               "title": "should return to the home page when the Skip button is clicked",
               "fullTitle": "📸 Image Upload & Camera Feature Tests should return to the home page when the Skip button is clicked",
               "timedOut": null,
-              "duration": 5283,
+              "duration": 5251,
               "state": "passed",
               "speed": "medium",
               "pass": true,
@@ -200,21 +200,21 @@
               "context": null,
               "code": "cy.get('#cameraButton').click();\ncy.get('#cameraError', {\n  timeout: 5000\n}).should('be.visible').and('contain', 'No back camera available');\ncy.get('.skip-button', {\n  timeout: 5000\n}).click();\ncy.get('#cameraError', {\n  timeout: 5000\n}).should('not.be.visible');\ncy.get('#cameraModal', {\n  timeout: 5000\n}).should('not.be.visible');\ncy.get('.header-with-logo', {\n  timeout: 5000\n}).should('be.visible');\ncy.get('#javaCode', {\n  timeout: 5000\n}).should('be.visible');\ncy.get('#translateButton', {\n  timeout: 5000\n}).should('be.visible');",
               "err": {},
-              "uuid": "fff48c91-b2a8-4ae4-be68-f7daf62f86fb",
-              "parentUUID": "6abe6d64-7e6d-45b9-a565-6f7d5b8ac5ad",
+              "uuid": "bfa903d3-0ddc-4557-890f-89b69f07b0f5",
+              "parentUUID": "0c6a58ff-abd9-44fe-8ccf-53abc960b96a",
               "isHook": false,
               "skipped": false
             }
           ],
           "suites": [],
           "passes": [
-            "194c32d0-1bc8-4c23-a514-210cd3163435",
-            "fff48c91-b2a8-4ae4-be68-f7daf62f86fb"
+            "f7b714c5-392c-4eef-aab3-dffe7a0507c6",
+            "bfa903d3-0ddc-4557-890f-89b69f07b0f5"
           ],
           "failures": [],
           "pending": [],
           "skipped": [],
-          "duration": 5749,
+          "duration": 5752,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
@@ -230,7 +230,7 @@
       "_timeout": 2000
     },
     {
-      "uuid": "a4cd9c42-d83a-406f-a0bf-b5cfffe75b98",
+      "uuid": "a1ec92ed-0605-41b9-ba4a-d34d279e75da",
       "title": "",
       "fullFile": "cypress\\e2e\\multi.cy.js",
       "file": "cypress\\e2e\\multi.cy.js",
@@ -239,7 +239,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "559cce98-0a5d-45ce-9bff-1a0969ca24dc",
+          "uuid": "4ec35e56-c2fd-44eb-9d37-6025dbfc4d3f",
           "title": "Codemorpher - Multi-Language Translation Loop",
           "fullFile": "",
           "file": "",
@@ -250,7 +250,7 @@
               "title": "should translate Java code to javascript",
               "fullTitle": "Codemorpher - Multi-Language Translation Loop should translate Java code to javascript",
               "timedOut": null,
-              "duration": 2911,
+              "duration": 2939,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -259,8 +259,8 @@
               "context": null,
               "code": "cy.get('#javaCode').clear().type(`public class Main { public static void main(String[] args) { System.out.println(\"Loop Test\"); } }`, {\n  parseSpecialCharSequences: false\n});\ncy.get(`.lang-option[data-value=\"${lang}\"]`).click();\ncy.get('#translateButton').click();\ncy.get('#translatedCodeBlock', {\n  timeout: 15000\n}).invoke('text').should(text => {\n  expect(text.trim()).to.not.eq('Translation will appear here...');\n  expect(text.trim().length).to.be.greaterThan(10);\n});\ncy.get('#translatedCodeBlock').invoke('text').should('not.be.empty');\ncy.screenshot(`translate-to-${lang}`);",
               "err": {},
-              "uuid": "6b698b50-22b6-44c3-a404-dba6c02dc72c",
-              "parentUUID": "559cce98-0a5d-45ce-9bff-1a0969ca24dc",
+              "uuid": "fc83d3ac-0456-4f25-8ce3-49553830d19d",
+              "parentUUID": "4ec35e56-c2fd-44eb-9d37-6025dbfc4d3f",
               "isHook": false,
               "skipped": false
             },
@@ -268,7 +268,7 @@
               "title": "should translate Java code to python",
               "fullTitle": "Codemorpher - Multi-Language Translation Loop should translate Java code to python",
               "timedOut": null,
-              "duration": 2146,
+              "duration": 2144,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -277,8 +277,8 @@
               "context": null,
               "code": "cy.get('#javaCode').clear().type(`public class Main { public static void main(String[] args) { System.out.println(\"Loop Test\"); } }`, {\n  parseSpecialCharSequences: false\n});\ncy.get(`.lang-option[data-value=\"${lang}\"]`).click();\ncy.get('#translateButton').click();\ncy.get('#translatedCodeBlock', {\n  timeout: 15000\n}).invoke('text').should(text => {\n  expect(text.trim()).to.not.eq('Translation will appear here...');\n  expect(text.trim().length).to.be.greaterThan(10);\n});\ncy.get('#translatedCodeBlock').invoke('text').should('not.be.empty');\ncy.screenshot(`translate-to-${lang}`);",
               "err": {},
-              "uuid": "5971e61d-a342-4234-b2ab-36ff0a0d88ee",
-              "parentUUID": "559cce98-0a5d-45ce-9bff-1a0969ca24dc",
+              "uuid": "bad68c93-29a5-487a-98fb-a04d6b98d528",
+              "parentUUID": "4ec35e56-c2fd-44eb-9d37-6025dbfc4d3f",
               "isHook": false,
               "skipped": false
             },
@@ -286,7 +286,7 @@
               "title": "should translate Java code to c",
               "fullTitle": "Codemorpher - Multi-Language Translation Loop should translate Java code to c",
               "timedOut": null,
-              "duration": 2085,
+              "duration": 2061,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -295,8 +295,8 @@
               "context": null,
               "code": "cy.get('#javaCode').clear().type(`public class Main { public static void main(String[] args) { System.out.println(\"Loop Test\"); } }`, {\n  parseSpecialCharSequences: false\n});\ncy.get(`.lang-option[data-value=\"${lang}\"]`).click();\ncy.get('#translateButton').click();\ncy.get('#translatedCodeBlock', {\n  timeout: 15000\n}).invoke('text').should(text => {\n  expect(text.trim()).to.not.eq('Translation will appear here...');\n  expect(text.trim().length).to.be.greaterThan(10);\n});\ncy.get('#translatedCodeBlock').invoke('text').should('not.be.empty');\ncy.screenshot(`translate-to-${lang}`);",
               "err": {},
-              "uuid": "da5dbb21-cfca-4938-9b15-5e9db0a52cd8",
-              "parentUUID": "559cce98-0a5d-45ce-9bff-1a0969ca24dc",
+              "uuid": "e60181a8-5fed-4894-b9b1-35961156da4a",
+              "parentUUID": "4ec35e56-c2fd-44eb-9d37-6025dbfc4d3f",
               "isHook": false,
               "skipped": false
             },
@@ -304,7 +304,7 @@
               "title": "should translate Java code to cpp",
               "fullTitle": "Codemorpher - Multi-Language Translation Loop should translate Java code to cpp",
               "timedOut": null,
-              "duration": 2075,
+              "duration": 2072,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -313,8 +313,8 @@
               "context": null,
               "code": "cy.get('#javaCode').clear().type(`public class Main { public static void main(String[] args) { System.out.println(\"Loop Test\"); } }`, {\n  parseSpecialCharSequences: false\n});\ncy.get(`.lang-option[data-value=\"${lang}\"]`).click();\ncy.get('#translateButton').click();\ncy.get('#translatedCodeBlock', {\n  timeout: 15000\n}).invoke('text').should(text => {\n  expect(text.trim()).to.not.eq('Translation will appear here...');\n  expect(text.trim().length).to.be.greaterThan(10);\n});\ncy.get('#translatedCodeBlock').invoke('text').should('not.be.empty');\ncy.screenshot(`translate-to-${lang}`);",
               "err": {},
-              "uuid": "6aaa7f2a-c064-41a6-88e0-94d4688f0ed4",
-              "parentUUID": "559cce98-0a5d-45ce-9bff-1a0969ca24dc",
+              "uuid": "807ad5c7-dae8-4256-8951-58cd420c4178",
+              "parentUUID": "4ec35e56-c2fd-44eb-9d37-6025dbfc4d3f",
               "isHook": false,
               "skipped": false
             },
@@ -322,7 +322,7 @@
               "title": "should translate Java code to csharp",
               "fullTitle": "Codemorpher - Multi-Language Translation Loop should translate Java code to csharp",
               "timedOut": null,
-              "duration": 2109,
+              "duration": 2067,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -331,8 +331,8 @@
               "context": null,
               "code": "cy.get('#javaCode').clear().type(`public class Main { public static void main(String[] args) { System.out.println(\"Loop Test\"); } }`, {\n  parseSpecialCharSequences: false\n});\ncy.get(`.lang-option[data-value=\"${lang}\"]`).click();\ncy.get('#translateButton').click();\ncy.get('#translatedCodeBlock', {\n  timeout: 15000\n}).invoke('text').should(text => {\n  expect(text.trim()).to.not.eq('Translation will appear here...');\n  expect(text.trim().length).to.be.greaterThan(10);\n});\ncy.get('#translatedCodeBlock').invoke('text').should('not.be.empty');\ncy.screenshot(`translate-to-${lang}`);",
               "err": {},
-              "uuid": "07ec02d0-d7ea-4c10-9aa7-df7fffe23348",
-              "parentUUID": "559cce98-0a5d-45ce-9bff-1a0969ca24dc",
+              "uuid": "d6bca16c-6d65-4216-8cb9-09f8a602bc99",
+              "parentUUID": "4ec35e56-c2fd-44eb-9d37-6025dbfc4d3f",
               "isHook": false,
               "skipped": false
             },
@@ -340,7 +340,7 @@
               "title": "should translate Java code to php",
               "fullTitle": "Codemorpher - Multi-Language Translation Loop should translate Java code to php",
               "timedOut": null,
-              "duration": 2053,
+              "duration": 2054,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -349,25 +349,25 @@
               "context": null,
               "code": "cy.get('#javaCode').clear().type(`public class Main { public static void main(String[] args) { System.out.println(\"Loop Test\"); } }`, {\n  parseSpecialCharSequences: false\n});\ncy.get(`.lang-option[data-value=\"${lang}\"]`).click();\ncy.get('#translateButton').click();\ncy.get('#translatedCodeBlock', {\n  timeout: 15000\n}).invoke('text').should(text => {\n  expect(text.trim()).to.not.eq('Translation will appear here...');\n  expect(text.trim().length).to.be.greaterThan(10);\n});\ncy.get('#translatedCodeBlock').invoke('text').should('not.be.empty');\ncy.screenshot(`translate-to-${lang}`);",
               "err": {},
-              "uuid": "16aa3560-9754-4a6e-83a4-d43bcebdb4cd",
-              "parentUUID": "559cce98-0a5d-45ce-9bff-1a0969ca24dc",
+              "uuid": "8e8b8343-a31e-4025-a5ba-8587cff80b58",
+              "parentUUID": "4ec35e56-c2fd-44eb-9d37-6025dbfc4d3f",
               "isHook": false,
               "skipped": false
             }
           ],
           "suites": [],
           "passes": [
-            "6b698b50-22b6-44c3-a404-dba6c02dc72c",
-            "5971e61d-a342-4234-b2ab-36ff0a0d88ee",
-            "da5dbb21-cfca-4938-9b15-5e9db0a52cd8",
-            "6aaa7f2a-c064-41a6-88e0-94d4688f0ed4",
-            "07ec02d0-d7ea-4c10-9aa7-df7fffe23348",
-            "16aa3560-9754-4a6e-83a4-d43bcebdb4cd"
+            "fc83d3ac-0456-4f25-8ce3-49553830d19d",
+            "bad68c93-29a5-487a-98fb-a04d6b98d528",
+            "e60181a8-5fed-4894-b9b1-35961156da4a",
+            "807ad5c7-dae8-4256-8951-58cd420c4178",
+            "d6bca16c-6d65-4216-8cb9-09f8a602bc99",
+            "8e8b8343-a31e-4025-a5ba-8587cff80b58"
           ],
           "failures": [],
           "pending": [],
           "skipped": [],
-          "duration": 13379,
+          "duration": 13337,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
@@ -383,7 +383,7 @@
       "_timeout": 2000
     },
     {
-      "uuid": "52c41d7a-f9a4-43a6-867e-73fcc79fa8c6",
+      "uuid": "836cf698-a509-499c-9568-4f637c8854b8",
       "title": "",
       "fullFile": "cypress\\e2e\\responsive.cy.js",
       "file": "cypress\\e2e\\responsive.cy.js",
@@ -392,7 +392,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "dd4b7ff5-7914-498e-9675-d4cc0cbe0828",
+          "uuid": "42e2a70f-944f-4743-911b-5928c13197b0",
           "title": "Codemorpher - Responsive UI Test",
           "fullFile": "",
           "file": "",
@@ -403,7 +403,7 @@
               "title": "should render properly on iPhone X",
               "fullTitle": "Codemorpher - Responsive UI Test should render properly on iPhone X",
               "timedOut": null,
-              "duration": 1099,
+              "duration": 1049,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -412,8 +412,8 @@
               "context": null,
               "code": "cy.viewport(width, height);\ncy.visit('http://localhost:5500/codemorpher-frontend/public');\ncy.get('.header-with-logo').should('be.visible');\ncy.get('#translateButton').should('be.visible');\ncy.screenshot(`responsive-${device}`);",
               "err": {},
-              "uuid": "ba115127-bb0f-4d57-a853-dd56672b83b3",
-              "parentUUID": "dd4b7ff5-7914-498e-9675-d4cc0cbe0828",
+              "uuid": "7c57e27e-f32e-4cb7-b2d2-432ba67e9540",
+              "parentUUID": "42e2a70f-944f-4743-911b-5928c13197b0",
               "isHook": false,
               "skipped": false
             },
@@ -421,7 +421,7 @@
               "title": "should render properly on iPhone 14 Pro",
               "fullTitle": "Codemorpher - Responsive UI Test should render properly on iPhone 14 Pro",
               "timedOut": null,
-              "duration": 443,
+              "duration": 438,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -430,8 +430,8 @@
               "context": null,
               "code": "cy.viewport(width, height);\ncy.visit('http://localhost:5500/codemorpher-frontend/public');\ncy.get('.header-with-logo').should('be.visible');\ncy.get('#translateButton').should('be.visible');\ncy.screenshot(`responsive-${device}`);",
               "err": {},
-              "uuid": "10e226f1-0089-492f-a271-5a3ad29ad4a0",
-              "parentUUID": "dd4b7ff5-7914-498e-9675-d4cc0cbe0828",
+              "uuid": "83bcd018-f91b-4801-bdc4-567a608b5714",
+              "parentUUID": "42e2a70f-944f-4743-911b-5928c13197b0",
               "isHook": false,
               "skipped": false
             },
@@ -439,7 +439,7 @@
               "title": "should render properly on Pixel 6",
               "fullTitle": "Codemorpher - Responsive UI Test should render properly on Pixel 6",
               "timedOut": null,
-              "duration": 428,
+              "duration": 458,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -448,8 +448,8 @@
               "context": null,
               "code": "cy.viewport(width, height);\ncy.visit('http://localhost:5500/codemorpher-frontend/public');\ncy.get('.header-with-logo').should('be.visible');\ncy.get('#translateButton').should('be.visible');\ncy.screenshot(`responsive-${device}`);",
               "err": {},
-              "uuid": "0e781bac-27e7-47fe-a097-c58ba2eba6b7",
-              "parentUUID": "dd4b7ff5-7914-498e-9675-d4cc0cbe0828",
+              "uuid": "97d0d6db-009b-49b7-a014-c74c57402f20",
+              "parentUUID": "42e2a70f-944f-4743-911b-5928c13197b0",
               "isHook": false,
               "skipped": false
             },
@@ -457,7 +457,7 @@
               "title": "should render properly on iPad",
               "fullTitle": "Codemorpher - Responsive UI Test should render properly on iPad",
               "timedOut": null,
-              "duration": 491,
+              "duration": 482,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -466,8 +466,8 @@
               "context": null,
               "code": "cy.viewport(width, height);\ncy.visit('http://localhost:5500/codemorpher-frontend/public');\ncy.get('.header-with-logo').should('be.visible');\ncy.get('#translateButton').should('be.visible');\ncy.screenshot(`responsive-${device}`);",
               "err": {},
-              "uuid": "ae4f34da-d7d4-4050-965e-91509e893d38",
-              "parentUUID": "dd4b7ff5-7914-498e-9675-d4cc0cbe0828",
+              "uuid": "a8c8e0ee-f68f-49fa-a2d1-5c58ed79a029",
+              "parentUUID": "42e2a70f-944f-4743-911b-5928c13197b0",
               "isHook": false,
               "skipped": false
             },
@@ -475,7 +475,7 @@
               "title": "should render properly on iPad Pro",
               "fullTitle": "Codemorpher - Responsive UI Test should render properly on iPad Pro",
               "timedOut": null,
-              "duration": 519,
+              "duration": 500,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -484,8 +484,8 @@
               "context": null,
               "code": "cy.viewport(width, height);\ncy.visit('http://localhost:5500/codemorpher-frontend/public');\ncy.get('.header-with-logo').should('be.visible');\ncy.get('#translateButton').should('be.visible');\ncy.screenshot(`responsive-${device}`);",
               "err": {},
-              "uuid": "238a7678-a93a-44ff-b851-666d8599bde9",
-              "parentUUID": "dd4b7ff5-7914-498e-9675-d4cc0cbe0828",
+              "uuid": "151f818a-1c30-4c52-9480-b1b4fc2bf87b",
+              "parentUUID": "42e2a70f-944f-4743-911b-5928c13197b0",
               "isHook": false,
               "skipped": false
             },
@@ -493,7 +493,7 @@
               "title": "should render properly on MacBook",
               "fullTitle": "Codemorpher - Responsive UI Test should render properly on MacBook",
               "timedOut": null,
-              "duration": 476,
+              "duration": 478,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -502,14 +502,32 @@
               "context": null,
               "code": "cy.viewport(width, height);\ncy.visit('http://localhost:5500/codemorpher-frontend/public');\ncy.get('.header-with-logo').should('be.visible');\ncy.get('#translateButton').should('be.visible');\ncy.screenshot(`responsive-${device}`);",
               "err": {},
-              "uuid": "c92c54ce-09ae-4a3d-bdcf-5d906cd3fa4e",
-              "parentUUID": "dd4b7ff5-7914-498e-9675-d4cc0cbe0828",
+              "uuid": "57355fd1-3602-4a2e-b327-2be5a85f6700",
+              "parentUUID": "42e2a70f-944f-4743-911b-5928c13197b0",
               "isHook": false,
               "skipped": false
             },
             {
               "title": "should render properly on Desktop 1080p",
               "fullTitle": "Codemorpher - Responsive UI Test should render properly on Desktop 1080p",
+              "timedOut": null,
+              "duration": 473,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "cy.viewport(width, height);\ncy.visit('http://localhost:5500/codemorpher-frontend/public');\ncy.get('.header-with-logo').should('be.visible');\ncy.get('#translateButton').should('be.visible');\ncy.screenshot(`responsive-${device}`);",
+              "err": {},
+              "uuid": "f96eccab-1065-4ff8-8b50-4807adfc5c9e",
+              "parentUUID": "42e2a70f-944f-4743-911b-5928c13197b0",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "should render properly on Desktop 4K",
+              "fullTitle": "Codemorpher - Responsive UI Test should render properly on Desktop 4K",
               "timedOut": null,
               "duration": 470,
               "state": "passed",
@@ -520,45 +538,27 @@
               "context": null,
               "code": "cy.viewport(width, height);\ncy.visit('http://localhost:5500/codemorpher-frontend/public');\ncy.get('.header-with-logo').should('be.visible');\ncy.get('#translateButton').should('be.visible');\ncy.screenshot(`responsive-${device}`);",
               "err": {},
-              "uuid": "1a0a6f16-ecf3-4ed4-b798-52bd593892d8",
-              "parentUUID": "dd4b7ff5-7914-498e-9675-d4cc0cbe0828",
-              "isHook": false,
-              "skipped": false
-            },
-            {
-              "title": "should render properly on Desktop 4K",
-              "fullTitle": "Codemorpher - Responsive UI Test should render properly on Desktop 4K",
-              "timedOut": null,
-              "duration": 461,
-              "state": "passed",
-              "speed": "fast",
-              "pass": true,
-              "fail": false,
-              "pending": false,
-              "context": null,
-              "code": "cy.viewport(width, height);\ncy.visit('http://localhost:5500/codemorpher-frontend/public');\ncy.get('.header-with-logo').should('be.visible');\ncy.get('#translateButton').should('be.visible');\ncy.screenshot(`responsive-${device}`);",
-              "err": {},
-              "uuid": "b59290bd-a2dd-410a-b1c1-360d05ef66ec",
-              "parentUUID": "dd4b7ff5-7914-498e-9675-d4cc0cbe0828",
+              "uuid": "47d34d62-a749-4ddb-a0d3-0e98809425db",
+              "parentUUID": "42e2a70f-944f-4743-911b-5928c13197b0",
               "isHook": false,
               "skipped": false
             }
           ],
           "suites": [],
           "passes": [
-            "ba115127-bb0f-4d57-a853-dd56672b83b3",
-            "10e226f1-0089-492f-a271-5a3ad29ad4a0",
-            "0e781bac-27e7-47fe-a097-c58ba2eba6b7",
-            "ae4f34da-d7d4-4050-965e-91509e893d38",
-            "238a7678-a93a-44ff-b851-666d8599bde9",
-            "c92c54ce-09ae-4a3d-bdcf-5d906cd3fa4e",
-            "1a0a6f16-ecf3-4ed4-b798-52bd593892d8",
-            "b59290bd-a2dd-410a-b1c1-360d05ef66ec"
+            "7c57e27e-f32e-4cb7-b2d2-432ba67e9540",
+            "83bcd018-f91b-4801-bdc4-567a608b5714",
+            "97d0d6db-009b-49b7-a014-c74c57402f20",
+            "a8c8e0ee-f68f-49fa-a2d1-5c58ed79a029",
+            "151f818a-1c30-4c52-9480-b1b4fc2bf87b",
+            "57355fd1-3602-4a2e-b327-2be5a85f6700",
+            "f96eccab-1065-4ff8-8b50-4807adfc5c9e",
+            "47d34d62-a749-4ddb-a0d3-0e98809425db"
           ],
           "failures": [],
           "pending": [],
           "skipped": [],
-          "duration": 4387,
+          "duration": 4348,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
@@ -574,7 +574,7 @@
       "_timeout": 2000
     },
     {
-      "uuid": "d20f16af-e694-47f0-a470-ea7748049fa2",
+      "uuid": "241d0f3c-ec8c-4d5d-bd97-d9764af9b469",
       "title": "",
       "fullFile": "cypress\\e2e\\run.cy.js",
       "file": "cypress\\e2e\\run.cy.js",
@@ -583,7 +583,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "58137d74-6a83-4cb6-84b4-e814c77d21d3",
+          "uuid": "566c5bb0-aad9-4551-8265-d6ae61b5c577",
           "title": "Codemorpher - Run Button Feature",
           "fullFile": "",
           "file": "",
@@ -594,17 +594,17 @@
               "title": "should display the Run Code button after translation",
               "fullTitle": "Codemorpher - Run Button Feature should display the Run Code button after translation",
               "timedOut": null,
-              "duration": 27020,
+              "duration": 8034,
               "state": "passed",
-              "speed": "slow",
+              "speed": "medium",
               "pass": true,
               "fail": false,
               "pending": false,
               "context": null,
               "code": "cy.contains('button', 'Run Code', {\n  timeout: 10000\n}).should('be.visible');\ncy.screenshot('run-button-visible');",
               "err": {},
-              "uuid": "2b19aaab-3898-47e9-8573-c9cc230f8d97",
-              "parentUUID": "58137d74-6a83-4cb6-84b4-e814c77d21d3",
+              "uuid": "3f2cf1e6-5915-4a57-87d8-b860707c9ca2",
+              "parentUUID": "566c5bb0-aad9-4551-8265-d6ae61b5c577",
               "isHook": false,
               "skipped": false
             },
@@ -612,7 +612,7 @@
               "title": "should open external compiler when Run Code is clicked",
               "fullTitle": "Codemorpher - Run Button Feature should open external compiler when Run Code is clicked",
               "timedOut": null,
-              "duration": 5717,
+              "duration": 5898,
               "state": "passed",
               "speed": "medium",
               "pass": true,
@@ -621,21 +621,21 @@
               "context": null,
               "code": "cy.window().then(win => {\n  cy.stub(win, 'open').as('windowOpen');\n});\ncy.contains('button', 'Run Code').click();\ncy.get('@windowOpen').should('have.been.calledOnce');\ncy.get('@windowOpen').should('have.been.calledWithMatch', /playcode\\.io|compiler-url/);\ncy.screenshot('run-button-clicked');",
               "err": {},
-              "uuid": "3eae647f-349c-49bc-a9a7-d197da16090a",
-              "parentUUID": "58137d74-6a83-4cb6-84b4-e814c77d21d3",
+              "uuid": "41250e8b-5c26-46b6-a7b2-85d17b3992fc",
+              "parentUUID": "566c5bb0-aad9-4551-8265-d6ae61b5c577",
               "isHook": false,
               "skipped": false
             }
           ],
           "suites": [],
           "passes": [
-            "2b19aaab-3898-47e9-8573-c9cc230f8d97",
-            "3eae647f-349c-49bc-a9a7-d197da16090a"
+            "3f2cf1e6-5915-4a57-87d8-b860707c9ca2",
+            "41250e8b-5c26-46b6-a7b2-85d17b3992fc"
           ],
           "failures": [],
           "pending": [],
           "skipped": [],
-          "duration": 32737,
+          "duration": 13932,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
@@ -651,7 +651,7 @@
       "_timeout": 2000
     },
     {
-      "uuid": "068d752f-39c6-4e9c-85b6-f643268c4d13",
+      "uuid": "b49c324e-6625-4cde-9d01-d9e4a2b99081",
       "title": "",
       "fullFile": "cypress\\e2e\\sample.cy.js",
       "file": "cypress\\e2e\\sample.cy.js",
@@ -660,7 +660,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "b1f1997b-ec9d-4ab9-9951-4dafcd64ae91",
+          "uuid": "b355d19c-105f-4e0a-9395-0933547c4db3",
           "title": "Codemorpher Home Page",
           "fullFile": "",
           "file": "",
@@ -671,7 +671,7 @@
               "title": "should load successfully and display title",
               "fullTitle": "Codemorpher Home Page should load successfully and display title",
               "timedOut": null,
-              "duration": 1230,
+              "duration": 1300,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -680,20 +680,20 @@
               "context": null,
               "code": "cy.visit('http://localhost:5500/codemorpher-frontend/public');\ncy.contains('CodeMorpher').should('be.visible');\ncy.screenshot('homepage-loaded');",
               "err": {},
-              "uuid": "af3df4f5-3ea3-4756-a360-81d6e0e146a8",
-              "parentUUID": "b1f1997b-ec9d-4ab9-9951-4dafcd64ae91",
+              "uuid": "49de30d4-85ff-4164-a996-a8f198e4c53c",
+              "parentUUID": "b355d19c-105f-4e0a-9395-0933547c4db3",
               "isHook": false,
               "skipped": false
             }
           ],
           "suites": [],
           "passes": [
-            "af3df4f5-3ea3-4756-a360-81d6e0e146a8"
+            "49de30d4-85ff-4164-a996-a8f198e4c53c"
           ],
           "failures": [],
           "pending": [],
           "skipped": [],
-          "duration": 1230,
+          "duration": 1300,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
@@ -709,7 +709,7 @@
       "_timeout": 2000
     },
     {
-      "uuid": "70a6908f-2f17-4f21-847d-1f4062de6ec2",
+      "uuid": "d82bbfaf-5610-4e48-8e8e-fc1caf9339b6",
       "title": "",
       "fullFile": "cypress\\e2e\\translation.cy.js",
       "file": "cypress\\e2e\\translation.cy.js",
@@ -718,7 +718,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "f05c7a3e-a3b6-48cc-acc0-d72e283321e1",
+          "uuid": "e1bda12d-d533-4457-9d4b-e237d2d7ab20",
           "title": "Codemorpher - Translate Feature",
           "fullFile": "",
           "file": "",
@@ -729,29 +729,29 @@
               "title": "should translate Java code and display result",
               "fullTitle": "Codemorpher - Translate Feature should translate Java code and display result",
               "timedOut": null,
-              "duration": 28718,
+              "duration": 6623,
               "state": "passed",
-              "speed": "slow",
+              "speed": "medium",
               "pass": true,
               "fail": false,
               "pending": false,
               "context": null,
               "code": "cy.get('#javaCode').clear().type(`public class Main {\\n  public static void main(String[] args) {\\n    System.out.println(\"Hello Kiddo\");\\n  }\\n}`);\ncy.get('.lang-option[data-value=\"javascript\"]').click();\ncy.get('#translateButton').click();\ncy.get('#translatedCodeBlock', {\n  timeout: 40000\n}).should('not.contain.text', '// Translation will appear here...').invoke('text').should('include', 'console.log');\ncy.screenshot('translation-success');",
               "err": {},
-              "uuid": "f20fc608-15b4-48a4-9c68-0e35ba16227a",
-              "parentUUID": "f05c7a3e-a3b6-48cc-acc0-d72e283321e1",
+              "uuid": "1ceec7ea-d88a-47a8-8132-c8b1ed256e50",
+              "parentUUID": "e1bda12d-d533-4457-9d4b-e237d2d7ab20",
               "isHook": false,
               "skipped": false
             }
           ],
           "suites": [],
           "passes": [
-            "f20fc608-15b4-48a4-9c68-0e35ba16227a"
+            "1ceec7ea-d88a-47a8-8132-c8b1ed256e50"
           ],
           "failures": [],
           "pending": [],
           "skipped": [],
-          "duration": 28718,
+          "duration": 6623,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
@@ -767,7 +767,7 @@
       "_timeout": 2000
     },
     {
-      "uuid": "a0442db3-4af7-4396-bd83-77806457e237",
+      "uuid": "adf196b0-0cbc-4a49-b1cc-83cc7740eee9",
       "title": "",
       "fullFile": "cypress\\e2e\\ui.cy.js",
       "file": "cypress\\e2e\\ui.cy.js",
@@ -776,7 +776,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "722c6d8f-dabc-407b-8ef9-91fc0a885541",
+          "uuid": "d409cbf3-847e-4fca-93ed-dd103e94c2ea",
           "title": "Codemorpher - UI Components Check",
           "fullFile": "",
           "file": "",
@@ -787,7 +787,7 @@
               "title": "should display the header with logo and title",
               "fullTitle": "Codemorpher - UI Components Check should display the header with logo and title",
               "timedOut": null,
-              "duration": 1088,
+              "duration": 1079,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -796,8 +796,8 @@
               "context": null,
               "code": "cy.get('.header-with-logo').should('be.visible');\ncy.get('.logo-icon').should('be.visible');\ncy.contains('CodeMorpher').should('be.visible');\ncy.screenshot('ui-header');",
               "err": {},
-              "uuid": "9afb7444-97fb-4e85-8874-b398b8b07f2c",
-              "parentUUID": "722c6d8f-dabc-407b-8ef9-91fc0a885541",
+              "uuid": "34717682-99eb-43c9-86cb-e6fbb4e476ba",
+              "parentUUID": "d409cbf3-847e-4fca-93ed-dd103e94c2ea",
               "isHook": false,
               "skipped": false
             },
@@ -805,7 +805,7 @@
               "title": "should have the Java code input area",
               "fullTitle": "Codemorpher - UI Components Check should have the Java code input area",
               "timedOut": null,
-              "duration": 504,
+              "duration": 527,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -814,8 +814,8 @@
               "context": null,
               "code": "cy.get('#javaCode').should('exist').and('be.visible');\ncy.screenshot('ui-java-code-input');",
               "err": {},
-              "uuid": "53bb057c-2b0b-4f14-9e6b-6fbc4249d96a",
-              "parentUUID": "722c6d8f-dabc-407b-8ef9-91fc0a885541",
+              "uuid": "e592fd66-81b3-46c5-9d9f-8f7a1b9cc0a0",
+              "parentUUID": "d409cbf3-847e-4fca-93ed-dd103e94c2ea",
               "isHook": false,
               "skipped": false
             },
@@ -823,7 +823,7 @@
               "title": "should display all target language options",
               "fullTitle": "Codemorpher - UI Components Check should display all target language options",
               "timedOut": null,
-              "duration": 502,
+              "duration": 503,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -832,8 +832,8 @@
               "context": null,
               "code": "const languages = ['javascript', 'python', 'c', 'cpp', 'csharp', 'php'];\nlanguages.forEach(lang => {\n  cy.get(`.lang-option[data-value=\"${lang}\"]`).should('exist').and('be.visible');\n});\ncy.screenshot('ui-language-options');",
               "err": {},
-              "uuid": "fdeb2710-89b4-461e-a4a6-54ae38d93e4b",
-              "parentUUID": "722c6d8f-dabc-407b-8ef9-91fc0a885541",
+              "uuid": "1ec7feac-cb26-48c3-b74b-51929afbd849",
+              "parentUUID": "d409cbf3-847e-4fca-93ed-dd103e94c2ea",
               "isHook": false,
               "skipped": false
             },
@@ -841,7 +841,7 @@
               "title": "should display the Translate button",
               "fullTitle": "Codemorpher - UI Components Check should display the Translate button",
               "timedOut": null,
-              "duration": 485,
+              "duration": 506,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -850,8 +850,8 @@
               "context": null,
               "code": "cy.get('#translateButton').should('be.visible').and('contain', 'Translate');\ncy.screenshot('ui-translate-button');",
               "err": {},
-              "uuid": "f5fd0dca-ac74-4921-96fe-72922bf8f245",
-              "parentUUID": "722c6d8f-dabc-407b-8ef9-91fc0a885541",
+              "uuid": "0f4110dd-731c-4f29-950f-3086ef873922",
+              "parentUUID": "d409cbf3-847e-4fca-93ed-dd103e94c2ea",
               "isHook": false,
               "skipped": false
             },
@@ -859,7 +859,7 @@
               "title": "should show collapsed output sections initially",
               "fullTitle": "Codemorpher - UI Components Check should show collapsed output sections initially",
               "timedOut": null,
-              "duration": 520,
+              "duration": 496,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -868,24 +868,24 @@
               "context": null,
               "code": "cy.get('#translatedCode').should('exist');\ncy.get('#debuggingSteps').should('have.class', 'collapsed');\ncy.get('#algorithm').should('have.class', 'collapsed');\ncy.screenshot('ui-collapsed-output-sections');",
               "err": {},
-              "uuid": "13ab01b9-b55c-49c5-aab6-fe85cdc7809d",
-              "parentUUID": "722c6d8f-dabc-407b-8ef9-91fc0a885541",
+              "uuid": "1715783c-1368-4f84-89b3-b1f66cccbf4e",
+              "parentUUID": "d409cbf3-847e-4fca-93ed-dd103e94c2ea",
               "isHook": false,
               "skipped": false
             }
           ],
           "suites": [],
           "passes": [
-            "9afb7444-97fb-4e85-8874-b398b8b07f2c",
-            "53bb057c-2b0b-4f14-9e6b-6fbc4249d96a",
-            "fdeb2710-89b4-461e-a4a6-54ae38d93e4b",
-            "f5fd0dca-ac74-4921-96fe-72922bf8f245",
-            "13ab01b9-b55c-49c5-aab6-fe85cdc7809d"
+            "34717682-99eb-43c9-86cb-e6fbb4e476ba",
+            "e592fd66-81b3-46c5-9d9f-8f7a1b9cc0a0",
+            "1ec7feac-cb26-48c3-b74b-51929afbd849",
+            "0f4110dd-731c-4f29-950f-3086ef873922",
+            "1715783c-1368-4f84-89b3-b1f66cccbf4e"
           ],
           "failures": [],
           "pending": [],
           "skipped": [],
-          "duration": 3099,
+          "duration": 3111,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
@@ -901,7 +901,7 @@
       "_timeout": 2000
     },
     {
-      "uuid": "1bbfad7f-6754-4090-80b0-db034b4afea7",
+      "uuid": "499a49b6-68ab-4a27-9350-83ad507ad2c2",
       "title": "",
       "fullFile": "cypress\\e2e\\upload.cy.js",
       "file": "cypress\\e2e\\upload.cy.js",
@@ -910,7 +910,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "e18f5963-f982-4cfe-88a9-3ad010b94a99",
+          "uuid": "0be6f35a-0865-4836-932c-79a3043b4447",
           "title": "Codemorpher - Image Upload Feature",
           "fullFile": "",
           "file": "",
@@ -930,15 +930,15 @@
               "context": null,
               "code": "// Visit the local frontend served via live server or similar\ncy.visit('http://localhost:5500/codemorpher-frontend/public');\n// Trigger image upload using fixture\ncy.get('#uploadInput').selectFile('cypress/fixtures/test-img-1.jpeg', {\n  force: true\n});\n// Wait for loading overlay to disappear (in case Gemini API takes time)\ncy.get('#loadingOverlay', {\n  timeout: 30000\n}).should('not.be.visible');\n// Confirm Java code was pasted in textarea\ncy.get('#javaCode').invoke('val').should('include', 'public class'); // Java signature check\n// Optional: check if the line count also updated\ncy.get('#lineCounter').should('contain', 'Lines:');",
               "err": {},
-              "uuid": "353afd0e-b406-4cd8-abde-22834a63b6df",
-              "parentUUID": "e18f5963-f982-4cfe-88a9-3ad010b94a99",
+              "uuid": "d728ed2d-8991-4314-b6ab-86485f9fc10b",
+              "parentUUID": "0be6f35a-0865-4836-932c-79a3043b4447",
               "isHook": false,
               "skipped": false
             }
           ],
           "suites": [],
           "passes": [
-            "353afd0e-b406-4cd8-abde-22834a63b6df"
+            "d728ed2d-8991-4314-b6ab-86485f9fc10b"
           ],
           "failures": [],
           "pending": [],
@@ -959,7 +959,7 @@
       "_timeout": 2000
     },
     {
-      "uuid": "8ee2a53f-f082-4507-a7d7-15fc4eb9a16c",
+      "uuid": "27d6d4a2-bc57-4b1d-95aa-c65b75dbecee",
       "title": "",
       "fullFile": "cypress\\e2e\\copy_run.cy.js",
       "file": "cypress\\e2e\\copy_run.cy.js",
@@ -968,7 +968,7 @@
       "tests": [],
       "suites": [
         {
-          "uuid": "d502f9c4-22d1-4ff9-b8c1-7ab3b16ca8af",
+          "uuid": "fa2b9416-8e3f-46a4-9565-ead9f88d0fd7",
           "title": "Codemorpher - Copy Feature",
           "fullFile": "",
           "file": "",
@@ -979,7 +979,7 @@
               "title": "should translate and copy the code to clipboard",
               "fullTitle": "Codemorpher - Copy Feature should translate and copy the code to clipboard",
               "timedOut": null,
-              "duration": 8178,
+              "duration": 8353,
               "state": "passed",
               "speed": "medium",
               "pass": true,
@@ -988,20 +988,20 @@
               "context": null,
               "code": "const javaCode = `public class Main {\n  public static void main(String[] args) {\nSystem.out.println(\"Copied!\");\n  }\n}`;\nlet apiResponse = null;\ncy.intercept('POST', '**/translate', req => {\n  req.on('response', res => {\n    apiResponse = res.body;\n  });\n}).as('translateApi');\ncy.get('#javaCode').clear().type(javaCode, {\n  delay: 1\n});\ncy.get('.lang-option[data-value=\"javascript\"]').click();\ncy.get('#translateButton').click();\ncy.wait('@translateApi', {\n  timeout: 40000\n}).its('response.statusCode').should('eq', 200);\ncy.then(() => {\n  cy.log('Translation API response:', JSON.stringify(apiResponse));\n});\ncy.get('#loadingOverlay').then($el => {\n  cy.log('Loading overlay display:', $el.css('display'));\n});\ncy.get('#loadingOverlay', {\n  timeout: 40000\n}).should('have.css', 'display', 'none');\ncy.get('#translatedCodeBlock', {\n  timeout: 40000\n}).should('be.visible').invoke('text').should(text => {\n  expect(text.trim()).to.not.eq('Translation will appear here...');\n  expect(text.trim().length).to.be.greaterThan(10);\n});\ncy.window().then(win => {\n  cy.stub(win, 'alert').as('alert');\n});\ncy.get('button[onclick=\"copyToClipboard()\"]').click();\ncy.get('@alert').should('have.been.calledWith', '✅ Code copied to clipboard!');\ncy.screenshot('copy-success');",
               "err": {},
-              "uuid": "9db4dec6-fb54-496b-833d-8eae4f4a822d",
-              "parentUUID": "d502f9c4-22d1-4ff9-b8c1-7ab3b16ca8af",
+              "uuid": "6d80170d-bee1-4ae0-b245-0a3be0803d86",
+              "parentUUID": "fa2b9416-8e3f-46a4-9565-ead9f88d0fd7",
               "isHook": false,
               "skipped": false
             }
           ],
           "suites": [],
           "passes": [
-            "9db4dec6-fb54-496b-833d-8eae4f4a822d"
+            "6d80170d-bee1-4ae0-b245-0a3be0803d86"
           ],
           "failures": [],
           "pending": [],
           "skipped": [],
-          "duration": 8178,
+          "duration": 8353,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
