@@ -31,8 +31,9 @@ console.log(`✅ Webhook set at ${RENDER_EXTERNAL_URL}${webhookPath}`);
 const uploadWaitingUsers = new Map();
 const lastExtractedCode = new Map();
 const translationWaitingUsers = new Map();
+const activeCountdowns = new Map(); // Track active countdowns per chatId
 
-// Health check for server --> lookout
+// Health check for server
 app.get('/health', (_, res) => {
   res.status(200).send('OK');
 });
@@ -77,6 +78,110 @@ async function runTimerUntilDone(chatId, startText, endText, asyncFn) {
       message_id: messageId,
     });
     throw err;
+  }
+}
+
+// Helper function to send context-oriented message after a 15-second countdown
+async function sendStartMessage(chatId, bot, logBotEvent, targetLanguage) {
+  const sessionId = `context-message-${Date.now()}`;
+  try {
+    // Check if a countdown is already active for this chat
+    if (activeCountdowns.has(chatId)) {
+      console.log(`Skipped new countdown for chat ${chatId}; countdown already active`);
+      return;
+    }
+
+    // Log countdown initiation
+    await logBotEvent(sessionId, {
+      chatId,
+      action: 'start_countdown',
+      result: 'initiated',
+      language: targetLanguage,
+    });
+
+    // Send initial countdown message
+    const sent = await bot.sendMessage(chatId, `⏳ Feature reminder in 15 seconds...`);
+    const messageId = sent.message_id;
+    activeCountdowns.set(chatId, { messageId, sessionId });
+
+    let seconds = 15;
+    let done = false;
+
+    // Countdown interval
+    const interval = setInterval(async () => {
+      if (!done) {
+        seconds--;
+        if (seconds > 0) {
+          try {
+            await bot.editMessageText(`⏳ Feature reminder in ${seconds} seconds...`, {
+              chat_id: chatId,
+              message_id: messageId,
+            });
+          } catch (err) {
+            console.error(`Failed to update countdown for chat ${chatId}:`, err.message);
+            // Log error but continue countdown
+            await logBotEvent(sessionId, {
+              chatId,
+              action: 'update_countdown',
+              result: 'error',
+              error: err.message,
+              language: targetLanguage,
+            });
+          }
+        } else {
+          done = true;
+          clearInterval(interval);
+          activeCountdowns.delete(chatId);
+          try {
+            // Send context-oriented message
+            await bot.editMessageText(
+              `✅ Your code was translated to ${targetLanguage}! Want to translate it to another language or upload an image with Java code? Use /translate or /upload to keep coding!`,
+              {
+                chat_id: chatId,
+                message_id: messageId,
+              }
+            );
+            // Log successful context message
+            await logBotEvent(sessionId, {
+              chatId,
+              action: 'send_context_message',
+              result: 'success',
+              language: targetLanguage,
+            });
+          } catch (err) {
+            console.error(`Failed to send context message for chat ${chatId}:`, err.message);
+            await logBotEvent(sessionId, {
+              chatId,
+              action: 'send_context_message',
+              result: 'error',
+              error: err.message,
+              language: targetLanguage,
+            });
+          }
+        }
+      }
+    }, 1000);
+
+    // Ensure countdown stops if interrupted (e.g., bot restart)
+    setTimeout(() => {
+      if (!done) {
+        done = true;
+        clearInterval(interval);
+        activeCountdowns.delete(chatId);
+      }
+    }, 16000); // Slightly longer than 15 seconds to ensure cleanup
+
+  } catch (err) {
+    console.error(`Failed to initiate countdown for chat ${chatId}:`, err.message);
+    activeCountdowns.delete(chatId);
+    await logBotEvent(sessionId, {
+      chatId,
+      action: 'start_countdown',
+      result: 'error',
+      error: err.message,
+      language: targetLanguage,
+    });
+    // Continue without crashing
   }
 }
 
@@ -272,9 +377,14 @@ async function startTranslation(chatId, javaCode, targetLanguage) {
       language: targetLanguage,
     });
 
-    bot.sendMessage(chatId, `📄 *Translated Code:*\n\`\`\`\n${translatedCode.trim()}\n\`\`\``, {
+    // Send translated code
+    await bot.sendMessage(chatId, `📄 *Translated Code:*\n\`\`\`\n${translatedCode.trim()}\n\`\`\``, {
       parse_mode: 'Markdown',
     });
+
+    // Send context-oriented message after a 15-second countdown
+    await sendStartMessage(chatId, bot, logBotEvent, targetLanguage);
+
   } catch (err) {
     await logBotEvent(sessionId, {
       chatId,
