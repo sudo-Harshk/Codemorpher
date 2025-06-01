@@ -324,9 +324,7 @@ function updateTranslatedCode(lines, language) {
   codeBlock.className = `language-${language.toLowerCase()}`;
   codeBlock.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
 
-  if (language.toLowerCase() !== 'php') {
     Prism.highlightElement(codeBlock);
-  }
 
   const buttonsContainer = document.querySelector('#translatedCode .buttons');
   buttonsContainer.innerHTML = `
