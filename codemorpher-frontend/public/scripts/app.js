@@ -15,6 +15,9 @@ const cameraError = document.getElementById('cameraError');
 // Use the Render backend URL
 const BACKEND_URL = 'https://codemorpher-backend.onrender.com';
 
+// List of supported languages (must match Prism.js components loaded in index.html)
+const SUPPORTED_LANGUAGES = ['javascript', 'python', 'c', 'cpp', 'csharp', 'php'];
+
 // Existing event listeners
 document.getElementById('translateButton').addEventListener('click', handleTranslate);
 document.getElementById('uploadImageButton').addEventListener('click', () => {
@@ -197,7 +200,7 @@ async function processImage(blob) {
     } catch (err) {
       if (attempt === maxRetries) {
         stopLoading();
-        showError(err.message.includes('Failed to fetch') ? "Cannot connect to the server. Please check if the backend is running." : `Image upload failed: ${err.message}`);
+        showError(err.message.includes('Failed to fetch') ? " Cannot connect to the server. Please check if the backend is running." : `Image upload failed: ${err.message}`);
         console.error(err);
         return;
       }
@@ -283,13 +286,18 @@ function showError(message, isCameraError = false) {
   }
 }
 
-// Updated handleTranslate to handle all response cases
 async function handleTranslate() {
   const javaCode = document.getElementById('javaCode').value.trim();
-  const targetLanguage = document.getElementById('targetLanguage').value;
+  let targetLanguage = document.getElementById('targetLanguage').value;
 
+  // Validate targetLanguage
   if (!javaCode || !targetLanguage) {
     showError("Please enter code and select a target language.");
+    return;
+  }
+
+  if (!SUPPORTED_LANGUAGES.includes(targetLanguage.toLowerCase())) {
+    showError(`Unsupported target language: ${targetLanguage}. Please select a valid language.`);
     return;
   }
 
@@ -316,7 +324,7 @@ async function handleTranslate() {
 
     if (data.fallback) {
       showError("Translation failed. Displaying fallback result due to a processing error.");
-      updateTranslatedCode(data.translatedCode, targetLanguage, true); // Pass isFallback flag
+      updateTranslatedCode(data.translatedCode, targetLanguage, true);
       updateDebuggingSteps(data.debuggingSteps, true);
       updateAlgorithm(data.algorithm, true);
       return;
@@ -332,22 +340,35 @@ async function handleTranslate() {
   }
 }
 
-// Updated updateTranslatedCode to indicate fallback state
 function updateTranslatedCode(lines, language, isFallback = false) {
   const codeBlock = document.getElementById('translatedCodeBlock');
-  codeBlock.className = `language-${language.toLowerCase()} ${isFallback ? 'fallback' : ''}`; // Add fallback class
-  codeBlock.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
+  const normalizedLanguage = language.toLowerCase();
 
-  Prism.highlightElement(codeBlock);
+  // Validate language
+  if (!SUPPORTED_LANGUAGES.includes(normalizedLanguage)) {
+    console.warn(`Unsupported language for syntax highlighting: ${normalizedLanguage}`);
+    codeBlock.className = `language-none ${isFallback ? 'fallback' : ''}`; // Fallback to plain text
+    codeBlock.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
+  } else {
+    codeBlock.className = `language-${normalizedLanguage} ${isFallback ? 'fallback' : ''}`;
+    codeBlock.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
+
+    // Attempt to highlight, catch errors
+    try {
+      Prism.highlightElement(codeBlock);
+    } catch (err) {
+      console.error('Prism.js highlighting failed:', err);
+      codeBlock.className = `language-none ${isFallback ? 'fallback' : ''}`; // Fallback to plain text
+    }
+  }
 
   const buttonsContainer = document.querySelector('#translatedCode .buttons');
   buttonsContainer.innerHTML = `
     <button onclick="copyToClipboard()">Copy to Clipboard</button>
     ${!isFallback ? `<button onclick="runCode('${language}')">Run Code</button>` : ''}
-  `; // Disable Run Code button for fallback
+  `;
 }
 
-// Updated updateDebuggingSteps to indicate fallback state
 function updateDebuggingSteps(steps, isFallback = false) {
   const ul = document.querySelector('#debuggingSteps .debug-list');
   ul.className = `debug-list ${isFallback ? 'fallback' : ''}`; // Add fallback class
@@ -355,7 +376,6 @@ function updateDebuggingSteps(steps, isFallback = false) {
   document.getElementById('debuggingSteps').classList.remove('collapsed');
 }
 
-// Updated updateAlgorithm to indicate fallback state
 function updateAlgorithm(steps, isFallback = false) {
   const ol = document.querySelector('#algorithm .algorithm-list');
   ol.className = `algorithm-list ${isFallback ? 'fallback' : ''}`; // Add fallback class
@@ -583,3 +603,20 @@ langOptions.forEach(option => {
 });
 
 document.querySelector('.retry-icon').addEventListener('click', handleTranslate);
+
+// Ensure targetLanguage is valid on page load
+window.addEventListener('DOMContentLoaded', () => {
+  let targetLanguage = document.getElementById('targetLanguage').value.toLowerCase();
+  if (!SUPPORTED_LANGUAGES.includes(targetLanguage)) {
+    console.warn(`Invalid initial targetLanguage: ${targetLanguage}. Setting to default (javascript).`);
+    document.getElementById('targetLanguage').value = 'javascript';
+    // Update UI to reflect the default
+    langOptions.forEach(opt => {
+      if (opt.getAttribute('data-value').toLowerCase() === 'javascript') {
+        opt.classList.add('selected');
+      } else {
+        opt.classList.remove('selected');
+      }
+    });
+  }
+});
