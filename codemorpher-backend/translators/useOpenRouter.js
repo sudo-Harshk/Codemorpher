@@ -3,7 +3,7 @@ require('dotenv').config();
 const fsPromises = require('fs').promises;
 const path = require('path');
 
-const uploadDir = path.join(__dirname, '../uploads'); // <-- FIX
+const uploadDir = path.join(__dirname, '../uploads');
 
 const openai = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
@@ -15,6 +15,9 @@ const openai = new OpenAI({
 });
 
 async function useOpenRouter(javaCode, targetLanguage) {
+  const sessionId = `sess-${Date.now()}`; // For logging consistency with server.js
+  console.log(`🧠 [${sessionId}] useOpenRouter called with:`, { javaCode, targetLanguage }); // Add logging
+
   const prompt = `
 Convert the following Java code to ${targetLanguage}.
 
@@ -54,6 +57,7 @@ Important Instructions:
 Here is the Java code:
 ${javaCode}
   `;
+
   let completion, reply;
   try {
     completion = await openai.chat.completions.create({
@@ -62,20 +66,30 @@ ${javaCode}
     });
 
     reply = completion.choices?.[0]?.message?.content || '';
-    if (!reply) throw new Error('OpenRouter response incomplete.');
+    if (!reply) {
+      console.error(`❌ [${sessionId}] OpenRouter response incomplete.`);
+      throw new Error('OpenRouter response incomplete.');
+    }
+    console.log(`🧠 [${sessionId}] OpenRouter raw reply:\n`, reply); // Log raw reply for debugging
   } catch (err) {
-    console.error('[OpenRouter Error]', err);
+    console.error(`❌ [${sessionId}] OpenRouter API error:`, err.message);
     throw new Error('OpenRouter API error: ' + err.message);
   }
 
-  // Uncomment for debugging
-  // console.log("🧠 GPT RAW REPLY:\n", reply);
+  const parsed = parseGPTOutput(reply, sessionId);
+  
+  // Defensive: Ensure all sections are non-empty arrays
+  const result = {
+    translatedCode: Array.isArray(parsed.translatedCode) && parsed.translatedCode.length ? parsed.translatedCode : ['// Translation unavailable due to parsing error.'],
+    debuggingSteps: Array.isArray(parsed.debuggingSteps) && parsed.debuggingSteps.length ? parsed.debuggingSteps : ['⚠️ Debugging steps unavailable due to parsing error.'],
+    algorithm: Array.isArray(parsed.algorithm) && parsed.algorithm.length ? parsed.algorithm : ['⚠️ Algorithm unavailable due to parsing error.']
+  };
 
-  const parsed = parseGPTOutput(reply);
-  return parsed;
+  console.log(`📤 [${sessionId}] useOpenRouter returning:`, result); // Add logging
+  return result;
 }
 
-function parseGPTOutput(reply) {
+function parseGPTOutput(reply, sessionId) {
   // Flexible regex to support various possible LLM header stylings
   const codeMatch = reply.match(/(=== )?Translated Code( ===)?:?\s*```(?:[a-z]*)?\n([\s\S]*?)```/i);
   const debugMatch = reply.match(/(=== )?Debugging Steps( ===)?:?\s*\n([\s\S]*?)((=== )?Algorithm( ===)?:?)/i);
@@ -89,7 +103,7 @@ function parseGPTOutput(reply) {
       .trim();
 
   // Defensive: Always array even if missing
-  const translatedCode = codeMatch ? codeMatch[3].trim().split('\n') : [];
+  const translatedCode = codeMatch ? codeMatch[3].trim().split('\n').filter(line => line.trim()) : [];
   const debuggingSteps = debugMatch
     ? debugMatch[3].trim().split('\n').map(cleanupLine).filter(line => line.length)
     : [];
@@ -98,7 +112,7 @@ function parseGPTOutput(reply) {
     : [];
 
   if (translatedCode.length === 0 || debuggingSteps.length === 0 || algorithm.length === 0) {
-    console.warn('⚠️ parseGPTOutput: One or more sections missing!', { translatedCode, debuggingSteps, algorithm });
+    console.warn(`⚠️ [${sessionId}] parseGPTOutput: One or more sections missing!`, { translatedCode, debuggingSteps, algorithm });
   }
 
   return {

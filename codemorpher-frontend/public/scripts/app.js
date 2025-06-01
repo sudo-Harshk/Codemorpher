@@ -174,6 +174,10 @@ async function processImage(blob) {
         body: formData
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
       const data = await response.json();
       stopLoading();
 
@@ -182,7 +186,7 @@ async function processImage(blob) {
         if (data.extractedText) {
           showError(`${data.error} Extracted text: "${data.extractedText.slice(0, 100)}${data.extractedText.length > 100 ? '...' : ''}"`);
         } else {
-          showError(data.error || "Could not extract Java code.");
+          showError(data.error || "Could not extract Java code from the image.");
         }
         return;
       }
@@ -193,7 +197,7 @@ async function processImage(blob) {
     } catch (err) {
       if (attempt === maxRetries) {
         stopLoading();
-        showError(err.message.includes('Failed to fetch') ? "Cannot connect to the server. Please check if the backend is running." : "Image upload failed or server error.");
+        showError(err.message.includes('Failed to fetch') ? "Cannot connect to the server. Please check if the backend is running." : `Image upload failed: ${err.message}`);
         console.error(err);
         return;
       }
@@ -257,7 +261,7 @@ function showError(message, isCameraError = false) {
     content.appendChild(skipButton);
   } else {
     const retryButton = document.createElement('button');
-    retryButton.onclick = retryImageUpload;
+    retryButton.onclick = isCameraError ? retryImageUpload : retryTranslate;
     retryButton.textContent = 'Retry';
     content.appendChild(retryButton);
   }
@@ -271,58 +275,67 @@ function showError(message, isCameraError = false) {
   if (cameraError) {
     cameraError.textContent = message;
     cameraError.style.display = 'block';
+    // Hide the message after 5 seconds
+    setTimeout(() => {
+      cameraError.style.display = 'none';
+      cameraError.textContent = '';
+    }, 5000);
   }
 }
 
-// Existing functions (unchanged)
-function handleTranslate() {
+// Updated handleTranslate to handle all response cases
+async function handleTranslate() {
   const javaCode = document.getElementById('javaCode').value.trim();
   const targetLanguage = document.getElementById('targetLanguage').value;
 
   if (!javaCode || !targetLanguage) {
-    alert("Please enter code and select a target language.");
+    showError("Please enter code and select a target language.");
     return;
   }
 
   startLoading();
 
-  fetch(`${BACKEND_URL}/translate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ javaCode, targetLanguage })
-  })
-    .then(response => response.json())
-    .then(data => {
-      stopLoading();
-
-      if (data.error) {
-        showError(data.message || "Something went wrong.");
-        return;
-      }
-
-      // ------ FIXED: no extra brackets ------
-      if (data.fallback) {
-        showError("Translation incomplete. Displaying fallback result.");
-        updateTranslatedCode(data.translatedCode, targetLanguage);
-        updateDebuggingSteps(data.debuggingSteps);
-        updateAlgorithm(data.algorithm);
-        return;
-      }
-
-      updateTranslatedCode(data.translatedCode, targetLanguage);
-      updateDebuggingSteps(data.debuggingSteps);
-      updateAlgorithm(data.algorithm);
-    })
-    .catch(err => {
-      stopLoading();
-      showError(err.message.includes('Failed to fetch') ? "Cannot connect to the server. Please check if the backend is running." : "Network error or server unreachable.");
-      console.error(err);
+  try {
+    const response = await fetch(`${BACKEND_URL}/translate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ javaCode, targetLanguage })
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    stopLoading();
+
+    if (data.error) {
+      showError(data.error || "Translation failed due to a server error.");
+      return;
+    }
+
+    if (data.fallback) {
+      showError("Translation failed. Displaying fallback result due to a processing error.");
+      updateTranslatedCode(data.translatedCode, targetLanguage, true); // Pass isFallback flag
+      updateDebuggingSteps(data.debuggingSteps, true);
+      updateAlgorithm(data.algorithm, true);
+      return;
+    }
+
+    updateTranslatedCode(data.translatedCode, targetLanguage);
+    updateDebuggingSteps(data.debuggingSteps);
+    updateAlgorithm(data.algorithm);
+  } catch (err) {
+    stopLoading();
+    showError(err.message.includes('Failed to fetch') ? "Cannot connect to the server. Please check if the backend is running." : `Translation failed: ${err.message}`);
+    console.error(err);
+  }
 }
 
-function updateTranslatedCode(lines, language) {
+// Updated updateTranslatedCode to indicate fallback state
+function updateTranslatedCode(lines, language, isFallback = false) {
   const codeBlock = document.getElementById('translatedCodeBlock');
-  codeBlock.className = `language-${language.toLowerCase()}`;
+  codeBlock.className = `language-${language.toLowerCase()} ${isFallback ? 'fallback' : ''}`; // Add fallback class
   codeBlock.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
 
   Prism.highlightElement(codeBlock);
@@ -330,8 +343,24 @@ function updateTranslatedCode(lines, language) {
   const buttonsContainer = document.querySelector('#translatedCode .buttons');
   buttonsContainer.innerHTML = `
     <button onclick="copyToClipboard()">Copy to Clipboard</button>
-    <button onclick="runCode('${language}')">Run Code</button>
-  `;
+    ${!isFallback ? `<button onclick="runCode('${language}')">Run Code</button>` : ''}
+  `; // Disable Run Code button for fallback
+}
+
+// Updated updateDebuggingSteps to indicate fallback state
+function updateDebuggingSteps(steps, isFallback = false) {
+  const ul = document.querySelector('#debuggingSteps .debug-list');
+  ul.className = `debug-list ${isFallback ? 'fallback' : ''}`; // Add fallback class
+  ul.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
+  document.getElementById('debuggingSteps').classList.remove('collapsed');
+}
+
+// Updated updateAlgorithm to indicate fallback state
+function updateAlgorithm(steps, isFallback = false) {
+  const ol = document.querySelector('#algorithm .algorithm-list');
+  ol.className = `algorithm-list ${isFallback ? 'fallback' : ''}`; // Add fallback class
+  ol.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
+  document.getElementById('algorithm').classList.remove('collapsed');
 }
 
 function runCode(language) {
@@ -377,18 +406,6 @@ function runCode(language) {
   window.open(url, "_blank");
 }
 
-function updateDebuggingSteps(steps) {
-  const ul = document.querySelector('#debuggingSteps .debug-list');
-  ul.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
-  document.getElementById('debuggingSteps').classList.remove('collapsed');
-}
-
-function updateAlgorithm(steps) {
-  const ol = document.querySelector('#algorithm .algorithm-list');
-  ol.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
-  document.getElementById('algorithm').classList.remove('collapsed');
-}
-
 function escapeHTML(text) {
   return text.replace(/[&<>'"]/g, c => ({
     '&': '&amp;',
@@ -423,7 +440,9 @@ function retryImageUpload() {
   // Trigger the upload or camera again
   if (cameraButton) {
     cameraButton.click(); // Reopen the camera modal
-  } else if (document.getElementById('uploadInput')) {
+    return;
+  } 
+  if (document.getElementById('uploadInput')) {
     document.getElementById('uploadInput').click(); // Reopen file picker
   }
 }
@@ -437,6 +456,15 @@ function startLoading(customMessage = null) {
   if (!overlay || !progress || !fact) {
     console.error('Loading overlay elements not found:', { overlay, progress, fact });
     return;
+  }
+
+  // Reset any existing error messages or buttons
+  const content = document.getElementById('loadingContent');
+  if (content) {
+    const existingError = content.querySelector('.error-message');
+    if (existingError) existingError.remove();
+    const existingButton = content.querySelector('button');
+    if (existingButton) existingButton.remove();
   }
 
   overlay.style.display = 'flex';
