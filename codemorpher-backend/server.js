@@ -7,22 +7,19 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// ---- Uploads Directory ----
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// ---- Unified Translator (OpenRouter) ----
+// ---- Import Services ----
 const useOpenRouter = require('./translators/useOpenRouter');
-
-// ---- Firebase Logging ----
 const { logTranslation, logError } = require('./firebase/logService');
-
-// ---- Image Parsing (Gemini/Google Vision, etc.) ----
 const { extractJavaCodeFromImage } = require('./vision/geminiImageParser');
 
 // ---- Middleware ----
-app.use(cors());
+app.use(cors()); // Use open CORS for testing. Restrict in production!
 app.use(express.json());
 
 // ---- Health Check ----
@@ -54,9 +51,9 @@ app.post('/translate', async (req, res) => {
     if (!hasAll) {
       console.warn(`⚠️ [${sessionId}] Incomplete result. Returning fallback...`);
       result = {
-        translatedCode: result.translatedCode && result.translatedCode.length ? result.translatedCode : ['// Translation unavailable due to backend error.'],
-        debuggingSteps: result.debuggingSteps && result.debuggingSteps.length ? result.debuggingSteps : ['⚠️ OpenRouter could not provide debugging steps.'],
-        algorithm: result.algorithm && result.algorithm.length ? result.algorithm : ['⚠️ Algorithm generation failed.'],
+        translatedCode: (result.translatedCode && result.translatedCode.length) ? result.translatedCode : ['// Translation unavailable due to backend error.'],
+        debuggingSteps: (result.debuggingSteps && result.debuggingSteps.length) ? result.debuggingSteps : ['⚠️ OpenRouter could not provide debugging steps.'],
+        algorithm: (result.algorithm && result.algorithm.length) ? result.algorithm : ['⚠️ Algorithm generation failed.'],
         fallback: true
       };
       await logTranslation(sessionId, { ...result, input }, 'fallback', 'openrouter');
