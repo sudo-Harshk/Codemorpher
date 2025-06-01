@@ -684,3 +684,15 @@ pre {
     gap: 20px;
   }
 }
+
+/* Custom Focus Indicator */
+button:focus,
+.button-group button:focus,
+.lang-option:focus,
+.retry-icon:focus,
+.output-section .header:focus,
+[tabindex]:focus {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(38, 166, 154, 0.4); /* Optional: adds a softer glow around the outline */
+}
