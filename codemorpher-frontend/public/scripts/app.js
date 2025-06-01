@@ -300,11 +300,12 @@ function handleTranslate() {
         return;
       }
 
+      // ------ FIXED: no extra brackets ------
       if (data.fallback) {
         showError("Translation incomplete. Displaying fallback result.");
-        updateTranslatedCode([data.translatedCode], targetLanguage);
-        updateDebuggingSteps([data.debuggingSteps]);
-        updateAlgorithm([data.algorithm]);
+        updateTranslatedCode(data.translatedCode, targetLanguage);
+        updateDebuggingSteps(data.debuggingSteps);
+        updateAlgorithm(data.algorithm);
         return;
       }
 
@@ -324,7 +325,7 @@ function updateTranslatedCode(lines, language) {
   codeBlock.className = `language-${language.toLowerCase()}`;
   codeBlock.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
 
-    Prism.highlightElement(codeBlock);
+  Prism.highlightElement(codeBlock);
 
   const buttonsContainer = document.querySelector('#translatedCode .buttons');
   buttonsContainer.innerHTML = `
