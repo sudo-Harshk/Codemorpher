@@ -1,5 +1,8 @@
 const OpenAI = require('openai');
 require('dotenv').config();
+const fsPromises = require('fs').promises;
+const path = require('path');
+const multer = require('multer');
 
 const openai = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
@@ -107,5 +110,34 @@ function parseGPTOutput(reply) {
     algorithm,
   };
 }
+
+const cleanupUploads = async () => {
+  const files = await fsPromises.readdir(uploadDir);
+  const now = Date.now();
+  
+  for (const file of files) {
+    const filePath = path.join(uploadDir, file);
+    const stats = await fsPromises.stat(filePath);
+    if (now - stats.mtime.getTime() > 24 * 60 * 60 * 1000) { // 24 hours
+      await fsPromises.unlink(filePath);
+    }
+  }
+};
+
+// Run cleanup every hour
+setInterval(cleanupUploads, 60 * 60 * 1000);
+
+const upload = multer({
+  dest: 'uploads/',
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed'));
+    }
+    cb(null, true);
+  }
+});
 
 module.exports = useOpenRouter;
