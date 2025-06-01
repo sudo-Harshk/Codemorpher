@@ -1,34 +1,36 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const fs = require('fs'); 
-const fsPromises = require('fs').promises; 
+const fs = require('fs');
+const fsPromises = require('fs').promises;
+const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const uploadDir = 'uploads/';
+const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
-// 🔁 Unified Translator
+// ---- Unified Translator (OpenRouter) ----
 const useOpenRouter = require('./translators/useOpenRouter');
 
-// 🔁 Firebase logging
+// ---- Firebase Logging ----
 const { logTranslation, logError } = require('./firebase/logService');
 
-// 🧠 Image parsing
+// ---- Image Parsing (Gemini/Google Vision, etc.) ----
 const { extractJavaCodeFromImage } = require('./vision/geminiImageParser');
 
+// ---- Middleware ----
 app.use(cors());
 app.use(express.json());
 
-// 🧪 Health check
+// ---- Health Check ----
 app.get('/ping', (req, res) => {
   res.send('✅ Codemorpher backend is running!');
 });
 
-// 🚀 Translate Endpoint
+// ---- Translate Endpoint ----
 app.post('/translate', async (req, res) => {
   const { javaCode, targetLanguage } = req.body;
   const sessionId = `sess-${Date.now()}`;
@@ -43,18 +45,20 @@ app.post('/translate', async (req, res) => {
     console.log(`🧠 [${sessionId}] Translating using OpenRouter...`);
     let result = await useOpenRouter(javaCode, targetLanguage);
 
-    const hasAll = result.translatedCode?.length && result.debuggingSteps?.length && result.algorithm?.length;
+    // Defensive: ensure all three sections are present and arrays
+    const hasAll =
+      Array.isArray(result.translatedCode) && result.translatedCode.length &&
+      Array.isArray(result.debuggingSteps) && result.debuggingSteps.length &&
+      Array.isArray(result.algorithm) && result.algorithm.length;
 
     if (!hasAll) {
       console.warn(`⚠️ [${sessionId}] Incomplete result. Returning fallback...`);
-
       result = {
-        translatedCode: result.translatedCode || '// Translation unavailable due to backend error.',
-        debuggingSteps: result.debuggingSteps || '⚠️ OpenRouter could not provide debugging steps.',
-        algorithm: result.algorithm || '⚠️ Algorithm generation failed.',
+        translatedCode: result.translatedCode && result.translatedCode.length ? result.translatedCode : ['// Translation unavailable due to backend error.'],
+        debuggingSteps: result.debuggingSteps && result.debuggingSteps.length ? result.debuggingSteps : ['⚠️ OpenRouter could not provide debugging steps.'],
+        algorithm: result.algorithm && result.algorithm.length ? result.algorithm : ['⚠️ Algorithm generation failed.'],
         fallback: true
       };
-
       await logTranslation(sessionId, { ...result, input }, 'fallback', 'openrouter');
       return res.status(200).json(result);
     }
@@ -67,23 +71,31 @@ app.post('/translate', async (req, res) => {
     console.error(`❌ [${sessionId}] Translation failed: ${err.message}`);
     await logError(sessionId, javaCode, targetLanguage, err.message);
 
-    return res.status(200).json({
-      translatedCode: '// Translation unavailable due to backend error.',
-      debuggingSteps: '⚠️ OpenRouter could not provide debugging steps.',
-      algorithm: '⚠️ Algorithm generation failed.',
+    return res.status(500).json({
+      translatedCode: ['// Translation unavailable due to backend error.'],
+      debuggingSteps: ['⚠️ OpenRouter could not provide debugging steps.'],
+      algorithm: ['⚠️ Algorithm generation failed.'],
       fallback: true
     });
   }
 });
 
-// 📸 Image Upload Route
-const upload = multer({ dest: 'uploads/' });
+// ---- File Upload Route ----
+const upload = multer({
+  dest: uploadDir,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed.'), false);
+    }
+    cb(null, true);
+  }
+});
 
 app.post('/upload', upload.single('image'), async (req, res) => {
   const file = req.file;
-
   if (!file) {
-    return res.status(400).json({ error: 'No image uploaded.' });
+    return res.status(400).json({ error: 'No image uploaded or invalid file type/size.' });
   }
 
   const sessionId = `upload-${Date.now()}`;
@@ -92,31 +104,42 @@ app.post('/upload', upload.single('image'), async (req, res) => {
   try {
     const result = await extractJavaCodeFromImage(file.path);
 
-    // Cleanup uploaded file
-    await fsPromises.unlink(file.path).catch(err => console.warn(`⚠️ [${sessionId}] Failed to delete file: ${err.message}`));
+    // Always cleanup the uploaded file
+    await fsPromises.unlink(file.path).catch(err =>
+      console.warn(`⚠️ [${sessionId}] Failed to delete file: ${err.message}`)
+    );
 
     if (result.error) {
       console.log(`❌ [${sessionId}] No Java code detected. Extracted text: ${result.extractedText}`);
       return res.status(400).json({ error: result.error, extractedText: result.extractedText });
     }
 
-    // 🔧 Clean backtick-wrapped code
-    const cleanCode = result
-      .replace(/```[\s\S]*?\n?/, '') 
-      .replace(/```$/, '')         
-      .trim();
+    // Defensive: result may be { code, ... } or a string (legacy)
+    const codeString = result.code || result;
+    const cleanCode = typeof codeString === 'string'
+      ? codeString.replace(/^```[a-z]*\n?/im, '').replace(/```$/, '').trim()
+      : '';
 
     console.log(`✅ [${sessionId}] Java code extracted successfully.`);
     res.json({ javaCode: cleanCode });
   } catch (err) {
     console.error(`❌ [${sessionId}] Upload error: ${err.message}`);
     // Cleanup file in case of error
-    await fsPromises.unlink(file.path).catch(err => console.warn(`⚠️ [${sessionId}] Failed to delete file: ${err.message}`));
+    if (file && file.path) {
+      await fsPromises.unlink(file.path).catch(err =>
+        console.warn(`⚠️ [${sessionId}] Failed to delete file: ${err.message}`)
+      );
+    }
     res.status(500).json({ error: 'Failed to process image.' });
   }
 });
 
-// 🟢 Start Server
+// ---- Global Unhandled Rejection Handler ----
+process.on('unhandledRejection', (err) => {
+  console.error('UNHANDLED REJECTION:', err);
+});
+
+// ---- Start Server ----
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });
