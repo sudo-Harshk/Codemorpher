@@ -378,6 +378,31 @@ pre {
   min-width: 120px;
 }
 
+/* --- Added Styles for Fallback Responses and Plain Text --- */
+/* Style for fallback responses (when translation fails) */
+#translatedCodeBlock.fallback,
+.debug-list.fallback,
+.algorithm-list.fallback {
+  border: 2px solid var(--error-color); /* Red border */
+  background-color: #fff3f3; /* Light red background */
+  padding: 10px;
+  border-radius: 5px;
+}
+
+/* Style for plain text fallback (when Prism.js fails or language is unsupported) */
+.language-none {
+  background-color: var(--background-light);
+  color: #333;
+  padding: 12px;
+  border-radius: 0 0 5px 5px;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow-y: auto;
+}
+/* --- End of Added Styles --- */
+
 /* 8. Loading Overlay */
 .loading-overlay {
   position: fixed;
@@ -440,6 +465,24 @@ pre {
   margin-bottom: 15px;
   min-height: 20px;
 }
+
+/* --- Added Styles for Loading Overlay Buttons --- */
+.loading-content button {
+  margin-top: 10px;
+  padding: 12px 24px;
+  background-color: var(--primary-color);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.loading-content button:hover {
+  background-color: var(--hover-color);
+}
+/* --- End of Added Styles --- */
 
 /* 9. Button Group and Camera Modal */
 .button-group {
@@ -694,5 +737,5 @@ button:focus,
 [tabindex]:focus {
   outline: 3px solid var(--primary-color);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(38, 166, 154, 0.4); /* Optional: adds a softer glow around the outline */
+  box-shadow: 0 0 0 4px rgba(38, 166, 154, 0.4); 
 }
