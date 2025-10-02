@@ -1,180 +1,339 @@
-let progressInterval = null;
-let countdownTimer = null;
-let stream = null; // For camera stream
-let pendingImageBlob = null; // Store the image blob temporarily for confirmation
+(function() {
+  let progressInterval = null;
+  let countdownTimer = null;
+  let stream = null; // For camera stream
+  let pendingImageBlob = null; // Store the image blob temporarily for confirmation
 
-// DOM Elements for Camera and Confirmation
-const cameraButton = document.getElementById('cameraButton');
-const cameraModal = document.getElementById('cameraModal');
-const cameraPreview = document.getElementById('cameraPreview');
-const imagePreview = document.getElementById('imagePreview');
-const captureButton = document.getElementById('captureButton');
-const closeCameraButton = document.getElementById('closeCameraButton');
-const cameraError = document.getElementById('cameraError');
+  // DOM Elements for Camera and Confirmation
+  const cameraButton = document.getElementById('cameraButton');
+  const cameraModal = document.getElementById('cameraModal');
+  const cameraPreview = document.getElementById('cameraPreview');
+  const imagePreview = document.getElementById('imagePreview');
+  const captureButton = document.getElementById('captureButton');
+  const closeCameraButton = document.getElementById('closeCameraButton');
+  const cameraError = document.getElementById('cameraError');
 
-// Use the Render backend URL
-const BACKEND_URL = 'https://codemorpher-backend.onrender.com';
+  // Use the Render backend URL
+  const BACKEND_URL = 'https://codemorpher-backend.onrender.com';
 
-// List of supported languages (must match Prism.js components loaded in index.html)
-const SUPPORTED_LANGUAGES = ['javascript', 'python', 'c', 'cpp', 'csharp', 'php'];
+  // List of supported languages (must match Prism.js components loaded in index.html)
+  const SUPPORTED_LANGUAGES = ['javascript', 'python', 'c', 'cpp', 'csharp', 'php'];
 
-// Existing event listeners
-document.getElementById('translateButton').addEventListener('click', handleTranslate);
-document.getElementById('uploadImageButton').addEventListener('click', () => {
-  document.getElementById('uploadInput').click();
-});
-
-document.getElementById('uploadInput').addEventListener('change', async (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  // Show confirmation modal with image preview
-  pendingImageBlob = file;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    cameraPreview.style.display = 'none'; // Hide video
-    imagePreview.style.display = 'block'; // Show image
-    imagePreview.src = e.target.result; // Show the uploaded image
-    cameraModal.style.display = 'block';
-    updateModalForConfirmation();
+  // Centralized error messages
+  const ERROR_MESSAGES = {
+    CAMERA_ACCESS_ERROR: 'Error accessing camera. Please check permissions.',
+    NO_BACK_CAMERA: 'No back camera available.',
+    CAMERA_DENIED: 'Camera access denied. Please allow camera permissions in your browser settings.',
+    NOT_SECURE_CONTEXT: 'Camera access requires a secure connection (HTTPS). Please use HTTPS or test on localhost.',
+    NO_CAMERA_FOUND: 'No camera found on this device.',
+    IMAGE_NOT_PROCESSED: 'Image not processed. Please try an image containing code.',
+    SERVER_CONNECTION_ERROR: 'Cannot connect to the server. Please check if the backend is running.',
+    TRANSLATION_FAILED_SERVER: 'Translation failed due to a server error.',
+    TRANSLATION_FALLBACK: 'Translation failed. Displaying fallback result due to a processing error.',
+    NO_CODE_TO_RUN: 'No code to run!',
+    NOTHING_TO_COPY: 'Nothing to copy!',
+    CLIPBOARD_API_FAILED: '❌ Clipboard API failed. Falling back.',
+    COPY_SUCCESS: '✅ Code copied to clipboard!',
+    COPY_FALLBACK_SUCCESS: '✅ Code copied (fallback)!',
+    COPY_FALLBACK_FAILED: '❌ Copy failed. Please do it manually.',
+    MISSING_TRANSLATE_INPUT: "Please enter code and select a target language.",
+    UNSUPPORTED_TRANSLATE_LANGUAGE: (lang) => `Unsupported target language: ${lang}. Please select a valid language.`,
+    UPLOAD_FAILED_UNKNOWN: (err) => `Image upload failed: ${err.message}`,
+    EXTRACT_CODE_FAILED: 'Could not extract Java code from the image.',
+    LOADING_ELEMENTS_MISSING: 'Loading overlay elements not found.',
+    PRISM_HIGHLIGHT_FAILED: 'Prism.js highlighting failed:',
+    INVALID_INITIAL_LANGUAGE: (lang) => `Invalid initial targetLanguage: ${lang}. Setting to default (javascript).`,
   };
-  reader.readAsDataURL(file);
-});
 
-// Camera functionality
-cameraButton.addEventListener('click', async () => {
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { exact: "environment" } },
-      audio: false
-    });
+  // Existing event listeners
+  document.getElementById('translateButton').addEventListener('click', handleTranslate);
+  document.getElementById('uploadImageButton').addEventListener('click', () => {
+    document.getElementById('uploadInput').click();
+  });
 
-    cameraPreview.setAttribute("muted", "");
-    cameraPreview.setAttribute("autoplay", "");
-    cameraPreview.setAttribute("playsinline", "");
+  document.getElementById('uploadInput').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-    cameraPreview.srcObject = stream;
-    cameraPreview.style.display = 'block';
-    imagePreview.style.display = 'none';
-    imagePreview.src = '';
-    cameraModal.style.display = 'block';
-    updateModalForCamera();
+    // Show confirmation modal with image preview
+    pendingImageBlob = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      cameraPreview.style.display = 'none'; // Hide video
+      imagePreview.style.display = 'block'; // Show image
+      imagePreview.src = e.target.result; // Show the uploaded image
+      cameraModal.style.display = 'block';
+      updateModalForConfirmation();
+    };
+    reader.readAsDataURL(file);
+  });
 
-  } catch (err) {
-    console.error('Error accessing camera:', err);
-    let errorMessage = 'Error accessing camera. Please check permissions.';
-    if (err.name === 'OverconstrainedError') {
-      errorMessage = 'No back camera available.';
-    } else if (err.name === 'NotAllowedError') {
-      errorMessage = 'Camera access denied. Please allow camera permissions in your browser settings.';
-    } else if (err.name === 'NotSecureError') {
-      errorMessage = 'Camera access requires a secure connection (HTTPS). Please use HTTPS or test on localhost.';
-    } else if (err.name === 'NotFoundError') {
-      errorMessage = 'No camera found on this device.';
+  // Camera functionality
+  cameraButton.addEventListener('click', async () => {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { exact: "environment" } },
+        audio: false
+      });
+
+      cameraPreview.setAttribute("muted", "");
+      cameraPreview.setAttribute("autoplay", "");
+      cameraPreview.setAttribute("playsinline", "");
+
+      cameraPreview.srcObject = stream;
+      cameraPreview.style.display = 'block';
+      imagePreview.style.display = 'none';
+      imagePreview.src = '';
+      cameraModal.style.display = 'block';
+      updateModalForCamera();
+
+    } catch (err) {
+      console.error('Error accessing camera:', err);
+      let errorMessage = ERROR_MESSAGES.CAMERA_ACCESS_ERROR;
+      if (err.name === 'OverconstrainedError') {
+        errorMessage = ERROR_MESSAGES.NO_BACK_CAMERA;
+      } else if (err.name === 'NotAllowedError') {
+        errorMessage = ERROR_MESSAGES.CAMERA_DENIED;
+      } else if (err.name === 'NotSecureError') {
+        errorMessage = ERROR_MESSAGES.NOT_SECURE_CONTEXT;
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = ERROR_MESSAGES.NO_CAMERA_FOUND;
+      }
+      showError(errorMessage, err.name === 'OverconstrainedError' || err.name === 'NotFoundError');
     }
-    showError(errorMessage, err.name === 'OverconstrainedError' || err.name === 'NotFoundError');
-  }
-});
+  });
 
-captureButton.addEventListener('click', async () => {
-  // If in confirmation mode, this button acts as "Yes"
-  if (captureButton.textContent === 'Yes') {
-    cameraModal.style.display = 'none';
-    processImage(pendingImageBlob);
-    pendingImageBlob = null;
-    return;
-  }
+  captureButton.addEventListener('click', async () => {
+    // If in confirmation mode, this button acts as "Yes"
+    if (captureButton.textContent === 'Yes') {
+      cameraModal.style.display = 'none';
+      processImage(pendingImageBlob);
+      pendingImageBlob = null;
+      return;
+    }
 
-  // Otherwise, capture the photo
-  const canvas = document.createElement('canvas');
-  canvas.width = cameraPreview.videoWidth;
-  canvas.height = cameraPreview.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(cameraPreview, 0, 0);
+    // Otherwise, capture the photo
+    const canvas = document.createElement('canvas');
+    canvas.width = cameraPreview.videoWidth;
+    canvas.height = cameraPreview.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(cameraPreview, 0, 0);
 
-  // Convert canvas to blob
-  canvas.toBlob((blob) => {
-    // Stop the camera stream
+    // Convert canvas to blob
+    canvas.toBlob((blob) => {
+      // Stop the camera stream
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+
+      // Show confirmation modal with image preview
+      pendingImageBlob = blob;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        cameraPreview.srcObject = null; // Clear the stream
+        cameraPreview.style.display = 'none'; // Hide video
+        imagePreview.style.display = 'block'; // Show image
+        imagePreview.src = e.target.result; // Show the captured image
+        updateModalForConfirmation();
+      };
+      reader.readAsDataURL(blob);
+    }, 'image/jpeg');
+  });
+
+  closeCameraButton.addEventListener('click', () => {
+    // If in confirmation mode, this button acts as "No"
+    if (closeCameraButton.textContent === 'No') {
+      cameraModal.style.display = 'none';
+      showError(ERROR_MESSAGES.IMAGE_NOT_PROCESSED);
+      pendingImageBlob = null;
+      return;
+    }
+
+    // Otherwise, close the camera
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       stream = null;
     }
-
-    // Show confirmation modal with image preview
-    pendingImageBlob = blob;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      cameraPreview.srcObject = null; // Clear the stream
-      cameraPreview.style.display = 'none'; // Hide video
-      imagePreview.style.display = 'block'; // Show image
-      imagePreview.src = e.target.result; // Show the captured image
-      updateModalForConfirmation();
-    };
-    reader.readAsDataURL(blob);
-  }, 'image/jpeg');
-});
-
-closeCameraButton.addEventListener('click', () => {
-  // If in confirmation mode, this button acts as "No"
-  if (closeCameraButton.textContent === 'No') {
     cameraModal.style.display = 'none';
-    showError('Image not processed. Please try an image containing code.');
-    pendingImageBlob = null;
-    return;
+  });
+
+  // Helper to update modal for camera mode
+  function updateModalForCamera() {
+    captureButton.textContent = 'Capture';
+    closeCameraButton.textContent = 'Close';
+    const confirmationMessage = cameraModal.querySelector('.confirmation-message');
+    if (confirmationMessage) confirmationMessage.style.display = 'none';
   }
 
-  // Otherwise, close the camera
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
+  // Helper to update modal for confirmation mode
+  function updateModalForConfirmation() {
+    captureButton.textContent = 'Yes';
+    closeCameraButton.textContent = 'No';
+    // Add a message above the buttons
+    let confirmationMessage = cameraModal.querySelector('.confirmation-message');
+    if (!confirmationMessage) {
+      confirmationMessage = document.createElement('p');
+      confirmationMessage.className = 'confirmation-message';
+      confirmationMessage.textContent = 'Does this image contain code?';
+      confirmationMessage.style.textAlign = 'center';
+      confirmationMessage.style.marginBottom = '10px';
+      cameraModal.insertBefore(confirmationMessage, captureButton.parentElement);
+    } else {
+      confirmationMessage.style.display = 'block';
+    }
   }
-  cameraModal.style.display = 'none';
-});
 
-// Helper to update modal for camera mode
-function updateModalForCamera() {
-  captureButton.textContent = 'Capture';
-  closeCameraButton.textContent = 'Close';
-  const confirmationMessage = cameraModal.querySelector('.confirmation-message');
-  if (confirmationMessage) confirmationMessage.style.display = 'none';
-}
+  // Utility function to delay execution
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper to update modal for confirmation mode
-function updateModalForConfirmation() {
-  captureButton.textContent = 'Yes';
-  closeCameraButton.textContent = 'No';
-  // Add a message above the buttons
-  let confirmationMessage = cameraModal.querySelector('.confirmation-message');
-  if (!confirmationMessage) {
-    confirmationMessage = document.createElement('p');
-    confirmationMessage.className = 'confirmation-message';
-    confirmationMessage.textContent = 'Does this image contain code?';
-    confirmationMessage.style.textAlign = 'center';
-    confirmationMessage.style.marginBottom = '10px';
-    cameraModal.insertBefore(confirmationMessage, captureButton.parentElement);
-  } else {
-    confirmationMessage.style.display = 'block';
+  // Process the image after confirmation with retry logic
+  async function processImage(blob) {
+    startLoading("🧠 Extracting Java code from image...");
+
+    const formData = new FormData();
+    formData.append('image', blob, 'image.jpg');
+
+    const maxRetries = 3;
+    let attempt = 1;
+
+    while (attempt <= maxRetries) {
+      try {
+        const response = await fetch(`${BACKEND_URL}/upload`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        stopLoading();
+
+        if (data.error) {
+          // If the backend provides extracted text, include it in the error message
+          if (data.extractedText) {
+            showError(`${data.error} Extracted text: "${data.extractedText.slice(0, 100)}${data.extractedText.length > 100 ? '...' : ''}"`);
+          } else {
+            showError(data.error || ERROR_MESSAGES.EXTRACT_CODE_FAILED);
+          }
+          return;
+        }
+
+        document.getElementById('javaCode').value = data.javaCode;
+        updateLineCount();
+        return; // Success, exit the function
+      } catch (err) {
+        if (attempt === maxRetries) {
+          stopLoading();
+          showError(err.message.includes('Failed to fetch') ? ERROR_MESSAGES.SERVER_CONNECTION_ERROR : ERROR_MESSAGES.UPLOAD_FAILED_UNKNOWN(err));
+          console.error(err);
+          return;
+        }
+        console.warn(`Attempt ${attempt} failed. Retrying in 2 seconds...`);
+        await delay(2000); // Wait 2 seconds before retrying
+        attempt++;
+      }
+    }
   }
-}
 
-// Utility function to delay execution
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  // Handle Skip button click for camera errors
+  function skipCamera() {
+    const content = document.getElementById('loadingContent');
+    if (content) {
+      const errorDiv = content.querySelector('.error-message');
+      if (errorDiv) errorDiv.remove();
+      const skipButton = content.querySelector('.skip-button');
+      if (skipButton) skipButton.remove();
+    }
+    stopLoading();
+    if (cameraError) {
+      cameraError.textContent = ERROR_MESSAGES.NO_BACK_CAMERA;
+      cameraError.style.display = 'block';
+      // Hide the message after 5 seconds
+      setTimeout(() => {
+        cameraError.style.display = 'none';
+        cameraError.textContent = '';
+      }, 5000);
+    }
+  }
 
-// Process the image after confirmation with retry logic
-async function processImage(blob) {
-  startLoading("🧠 Extracting Java code from image...");
+  // Modified showError to handle camera-specific errors with Skip button
+  function showError(message, isCameraError = false) {
+    const content = document.getElementById('loadingContent');
+    if (!content) {
+      console.error(ERROR_MESSAGES.LOADING_ELEMENTS_MISSING);
+      return;
+    }
 
-  const formData = new FormData();
-  formData.append('image', blob, 'image.jpg');
+    // Preserve existing elements (spinner, progress-bar, funFact) and append error
+    const existingError = content.querySelector('.error-message');
+    if (existingError) {
+      existingError.textContent = `❌ ${message}`;
+    } else {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.textContent = `❌ ${message}`;
+      content.appendChild(errorDiv);
+    }
 
-  const maxRetries = 3;
-  let attempt = 1;
+    // Remove any existing button
+    const existingButton = content.querySelector('button');
+    if (existingButton) existingButton.remove();
 
-  while (attempt <= maxRetries) {
+    // Add Skip button for camera errors, Retry for others
+    if (isCameraError) {
+      const skipButton = document.createElement('button');
+      skipButton.className = 'skip-button';
+      skipButton.textContent = 'Skip';
+      skipButton.onclick = skipCamera;
+      content.appendChild(skipButton);
+    } else {
+      const retryButton = document.createElement('button');
+      retryButton.onclick = isCameraError ? retryImageUpload : retryTranslate;
+      retryButton.textContent = 'Retry';
+      content.appendChild(retryButton);
+    }
+
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+      overlay.style.display = 'flex';
+    }
+
+    // The cameraError element is now only used for immediate feedback when camera access fails, not for general error display during processing.
+    // if (cameraError) {
+    //   cameraError.textContent = message;
+    //   cameraError.style.display = 'block';
+    //   setTimeout(() => {
+    //     cameraError.style.display = 'none';
+    //     cameraError.textContent = '';
+    //   }, 5000);
+    // }
+  }
+
+  async function handleTranslate() {
+    const javaCode = document.getElementById('javaCode').value.trim();
+    let targetLanguage = document.getElementById('targetLanguage').value;
+
+    // Validate targetLanguage
+    if (!javaCode || !targetLanguage) {
+      showError(ERROR_MESSAGES.MISSING_TRANSLATE_INPUT);
+      return;
+    }
+
+    if (!SUPPORTED_LANGUAGES.includes(targetLanguage.toLowerCase())) {
+      showError(ERROR_MESSAGES.UNSUPPORTED_TRANSLATE_LANGUAGE(targetLanguage));
+      return;
+    }
+
+    startLoading();
+
     try {
-      const response = await fetch(`${BACKEND_URL}/upload`, {
+      const response = await fetch(`${BACKEND_URL}/translate`, {
         method: 'POST',
-        body: formData
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ javaCode, targetLanguage })
       });
 
       if (!response.ok) {
@@ -185,438 +344,312 @@ async function processImage(blob) {
       stopLoading();
 
       if (data.error) {
-        // If the backend provides extracted text, include it in the error message
-        if (data.extractedText) {
-          showError(`${data.error} Extracted text: "${data.extractedText.slice(0, 100)}${data.extractedText.length > 100 ? '...' : ''}"`);
-        } else {
-          showError(data.error || "Could not extract Java code from the image.");
-        }
+        showError(data.error || ERROR_MESSAGES.TRANSLATION_FAILED_SERVER);
         return;
       }
 
-      document.getElementById('javaCode').value = data.javaCode;
-      updateLineCount();
-      return; // Success, exit the function
-    } catch (err) {
-      if (attempt === maxRetries) {
-        stopLoading();
-        showError(err.message.includes('Failed to fetch') ? " Cannot connect to the server. Please check if the backend is running." : `Image upload failed: ${err.message}`);
-        console.error(err);
+      if (data.fallback) {
+        showError(ERROR_MESSAGES.TRANSLATION_FALLBACK);
+        updateTranslatedCode(data.translatedCode, targetLanguage, true);
+        updateDebuggingSteps(data.debuggingSteps, true);
+        updateAlgorithm(data.algorithm, true);
         return;
       }
-      console.warn(`Attempt ${attempt} failed. Retrying in 2 seconds...`);
-      await delay(2000); // Wait 2 seconds before retrying
-      attempt++;
-    }
-  }
-}
 
-// Handle Skip button click for camera errors
-function skipCamera() {
-  const content = document.getElementById('loadingContent');
-  if (content) {
-    const errorDiv = content.querySelector('.error-message');
-    if (errorDiv) errorDiv.remove();
-    const skipButton = content.querySelector('.skip-button');
-    if (skipButton) skipButton.remove();
-  }
-  stopLoading();
-  if (cameraError) {
-    cameraError.textContent = 'No back camera available';
-    cameraError.style.display = 'block';
-    // Hide the message after 5 seconds
-    setTimeout(() => {
-      cameraError.style.display = 'none';
-      cameraError.textContent = '';
-    }, 5000);
-  }
-}
-
-// Modified showError to handle camera-specific errors with Skip button
-function showError(message, isCameraError = false) {
-  const content = document.getElementById('loadingContent');
-  if (!content) {
-    console.error('Loading content element not found.');
-    return;
-  }
-
-  // Preserve existing elements (spinner, progress-bar, funFact) and append error
-  const existingError = content.querySelector('.error-message');
-  if (existingError) {
-    existingError.textContent = `❌ ${message}`;
-  } else {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.textContent = `❌ ${message}`;
-    content.appendChild(errorDiv);
-  }
-
-  // Remove any existing button
-  const existingButton = content.querySelector('button');
-  if (existingButton) existingButton.remove();
-
-  // Add Skip button for camera errors, Retry for others
-  if (isCameraError) {
-    const skipButton = document.createElement('button');
-    skipButton.className = 'skip-button';
-    skipButton.textContent = 'Skip';
-    skipButton.onclick = skipCamera;
-    content.appendChild(skipButton);
-  } else {
-    const retryButton = document.createElement('button');
-    retryButton.onclick = isCameraError ? retryImageUpload : retryTranslate;
-    retryButton.textContent = 'Retry';
-    content.appendChild(retryButton);
-  }
-
-  const overlay = document.getElementById('loadingOverlay');
-  if (overlay) {
-    overlay.style.display = 'flex';
-  }
-
-  // Show the camera error element
-  if (cameraError) {
-    cameraError.textContent = message;
-    cameraError.style.display = 'block';
-    // Hide the message after 5 seconds
-    setTimeout(() => {
-      cameraError.style.display = 'none';
-      cameraError.textContent = '';
-    }, 5000);
-  }
-}
-
-async function handleTranslate() {
-  const javaCode = document.getElementById('javaCode').value.trim();
-  let targetLanguage = document.getElementById('targetLanguage').value;
-
-  // Validate targetLanguage
-  if (!javaCode || !targetLanguage) {
-    showError("Please enter code and select a target language.");
-    return;
-  }
-
-  if (!SUPPORTED_LANGUAGES.includes(targetLanguage.toLowerCase())) {
-    showError(`Unsupported target language: ${targetLanguage}. Please select a valid language.`);
-    return;
-  }
-
-  startLoading();
-
-  try {
-    const response = await fetch(`${BACKEND_URL}/translate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ javaCode, targetLanguage })
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    stopLoading();
-
-    if (data.error) {
-      showError(data.error || "Translation failed due to a server error.");
-      return;
-    }
-
-    if (data.fallback) {
-      showError("Translation failed. Displaying fallback result due to a processing error.");
-      updateTranslatedCode(data.translatedCode, targetLanguage, true);
-      updateDebuggingSteps(data.debuggingSteps, true);
-      updateAlgorithm(data.algorithm, true);
-      return;
-    }
-
-    updateTranslatedCode(data.translatedCode, targetLanguage);
-    updateDebuggingSteps(data.debuggingSteps);
-    updateAlgorithm(data.algorithm);
-  } catch (err) {
-    stopLoading();
-    showError(err.message.includes('Failed to fetch') ? "Cannot connect to the server. Please check if the backend is running." : `Translation failed: ${err.message}`);
-    console.error(err);
-  }
-}
-
-function updateTranslatedCode(lines, language, isFallback = false) {
-  const codeBlock = document.getElementById('translatedCodeBlock');
-  const normalizedLanguage = language.toLowerCase();
-
-  // Validate language
-  if (!SUPPORTED_LANGUAGES.includes(normalizedLanguage)) {
-    console.warn(`Unsupported language for syntax highlighting: ${normalizedLanguage}`);
-    codeBlock.className = `language-none ${isFallback ? 'fallback' : ''}`; // Fallback to plain text
-    codeBlock.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
-  } else {
-    codeBlock.className = `language-${normalizedLanguage} ${isFallback ? 'fallback' : ''}`;
-    codeBlock.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
-
-    // Attempt to highlight, catch errors
-    try {
-      Prism.highlightElement(codeBlock);
+      updateTranslatedCode(data.translatedCode, targetLanguage);
+      updateDebuggingSteps(data.debuggingSteps);
+      updateAlgorithm(data.algorithm);
     } catch (err) {
-      console.error('Prism.js highlighting failed:', err);
+      stopLoading();
+      showError(err.message.includes('Failed to fetch') ? ERROR_MESSAGES.SERVER_CONNECTION_ERROR : `Translation failed: ${err.message}`);
+      console.error(err);
+    }
+  }
+
+  function updateTranslatedCode(lines, language, isFallback = false) {
+    const codeBlock = document.getElementById('translatedCodeBlock');
+    const normalizedLanguage = language.toLowerCase();
+
+    // Validate language
+    if (!SUPPORTED_LANGUAGES.includes(normalizedLanguage)) {
+      console.warn(`Unsupported language for syntax highlighting: ${normalizedLanguage}`);
       codeBlock.className = `language-none ${isFallback ? 'fallback' : ''}`; // Fallback to plain text
-    }
-  }
-
-  const buttonsContainer = document.querySelector('#translatedCode .buttons');
-  buttonsContainer.innerHTML = `
-    <button onclick="copyToClipboard()">Copy to Clipboard</button>
-    ${!isFallback ? `<button onclick="runCode('${language}')">Run Code</button>` : ''}
-  `;
-}
-
-function updateDebuggingSteps(steps, isFallback = false) {
-  const ul = document.querySelector('#debuggingSteps .debug-list');
-  ul.className = `debug-list ${isFallback ? 'fallback' : ''}`; // Add fallback class
-  ul.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
-  document.getElementById('debuggingSteps').classList.remove('collapsed');
-}
-
-function updateAlgorithm(steps, isFallback = false) {
-  const ol = document.querySelector('#algorithm .algorithm-list');
-  ol.className = `algorithm-list ${isFallback ? 'fallback' : ''}`; // Add fallback class
-  ol.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
-  document.getElementById('algorithm').classList.remove('collapsed');
-}
-
-function runCode(language) {
-  const codeBlock = document.getElementById('translatedCodeBlock');
-  const code = codeBlock.innerText.trim();
-
-  if (!code) {
-    alert('No code to run!');
-    return;
-  }
-
-  navigator.clipboard.writeText(code)
-    .then(() => console.log('Code copied to clipboard.'))
-    .catch(err => console.error('Failed to copy:', err));
-
-  let url = "";
-  switch (language.toLowerCase()) {
-    case "python":
-      url = "https://www.programiz.com/python-programming/online-compiler/";
-      break;
-    case "javascript":
-      url = "https://playcode.io/new";
-      break;
-    case "typescript":
-      url = "https://www.typescriptlang.org/play";
-      break;
-    case "c":
-      url = "https://www.onlinegdb.com/online_c_compiler";
-      break;
-    case "cpp":
-      url = "https://www.onlinegdb.com/online_c++_compiler";
-      break;
-    case "csharp":
-      url = "https://dotnetfiddle.net/";
-      break;
-    case "php":
-      url = "https://www.onlinegdb.com/online_php_interpreter";
-      break;
-    default:
-      alert("No compiler available for this language yet!");
-      return;
-  }
-  window.open(url, "_blank");
-}
-
-function escapeHTML(text) {
-  return text.replace(/[&<>'"]/g, c => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    "'": '&#39;',
-    '"': '&quot;'
-  }[c]));
-}
-
-function retryTranslate() {
-  const content = document.getElementById('loadingContent');
-  if (content) {
-    const errorDiv = content.querySelector('.error-message');
-    if (errorDiv) errorDiv.remove();
-    const retryButton = content.querySelector('button');
-    if (retryButton) retryButton.remove();
-  }
-  stopLoading();
-  handleTranslate();
-}
-
-function retryImageUpload() {
-  const content = document.getElementById('loadingContent');
-  if (content) {
-    const errorDiv = content.querySelector('.error-message');
-    if (errorDiv) errorDiv.remove();
-    const retryButton = content.querySelector('button');
-    if (retryButton) retryButton.remove();
-  }
-  stopLoading();
-  // Trigger the upload or camera again
-  if (cameraButton) {
-    cameraButton.click(); // Reopen the camera modal
-    return;
-  } 
-  if (document.getElementById('uploadInput')) {
-    document.getElementById('uploadInput').click(); // Reopen file picker
-  }
-}
-
-function startLoading(customMessage = null) {
-  const overlay = document.getElementById('loadingOverlay');
-  const progress = document.getElementById('progressBar');
-  const fact = document.getElementById('funFact');
-
-  // Check if elements exist before accessing properties
-  if (!overlay || !progress || !fact) {
-    console.error('Loading overlay elements not found:', { overlay, progress, fact });
-    return;
-  }
-
-  // Reset any existing error messages or buttons
-  const content = document.getElementById('loadingContent');
-  if (content) {
-    const existingError = content.querySelector('.error-message');
-    if (existingError) existingError.remove();
-    const existingButton = content.querySelector('button');
-    if (existingButton) existingButton.remove();
-  }
-
-  overlay.style.display = 'flex';
-
-  let width = 0;
-  if (progressInterval) clearInterval(progressInterval);
-  progress.style.width = '0%';
-
-  progressInterval = setInterval(() => {
-    if (width >= 100) {
-      clearInterval(progressInterval);
+      codeBlock.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
     } else {
-      width += 2;
-      progress.style.width = width + '%';
-    }
-  }, 200);
+      codeBlock.className = `language-${normalizedLanguage} ${isFallback ? 'fallback' : ''}`;
+      codeBlock.innerHTML = lines.map(line => escapeHTML(line)).join('\n');
 
-  // 🧠 If a custom static message is passed (for upload)
-  if (customMessage) {
-    fact.textContent = customMessage;
-    return;
-  }
-
-  // ⏳ Default: countdown for translation
-  const facts = [
-    "JavaScript was created in just 10 days!",
-    "Python is named after Monty Python, not the snake!",
-    "HTML is not a programming language, it’s a markup language!",
-    "The first computer bug was a real moth!",
-    "Java and JavaScript are not the same!"
-  ];
-
-  fact.textContent = `Fun Fact: ${facts[Math.floor(Math.random() * facts.length)]}`;
-
-  let estimatedTime = 12;
-  if (countdownTimer) clearInterval(countdownTimer);
-  countdownTimer = setInterval(() => {
-    if (estimatedTime > 0) {
-      fact.textContent = `Translating... ~${estimatedTime} seconds remaining`;
-      estimatedTime--;
-    } else {
-      fact.textContent = "Almost done... Finalizing translation! ✨";
-    }
-  }, 1000);
-}
-
-function stopLoading() {
-  const overlay = document.getElementById('loadingOverlay');
-  if (overlay) {
-    overlay.style.display = 'none';
-  }
-  if (progressInterval) clearInterval(progressInterval);
-  if (countdownTimer) clearInterval(countdownTimer);
-}
-
-function copyToClipboard() {
-  const codeBlock = document.getElementById('translatedCodeBlock');
-  const code = codeBlock.innerText.trim();
-
-  if (!code) {
-    alert('Nothing to copy!');
-    return;
-  }
-
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(code)
-      .then(() => {
-        alert('✅ Code copied to clipboard!');
-      })
-      .catch(err => {
-        console.error('❌ Clipboard API failed. Falling back.', err);
-        fallbackCopy(code);
-      });
-  } else {
-    fallbackCopy(code);
-  }
-}
-
-function fallbackCopy(text) {
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  textarea.style.position = "fixed";
-  document.body.appendChild(textarea);
-  textarea.focus();
-  textarea.select();
-  try {
-    document.execCommand("copy");
-    alert("✅ Code copied (fallback)!");
-  } catch (err) {
-    alert("❌ Copy failed. Please do it manually.");
-  }
-  document.body.removeChild(textarea);
-}
-
-function toggleCollapse(id) {
-  document.getElementById(id).classList.toggle('collapsed');
-}
-
-const javaCodeInput = document.getElementById('javaCode');
-const lineCounter = document.getElementById('lineCounter');
-
-function updateLineCount() {
-  const lines = javaCodeInput.value.split('\n').length;
-  lineCounter.textContent = `Lines: ${lines}`;
-}
-javaCodeInput.addEventListener('input', updateLineCount);
-window.addEventListener('DOMContentLoaded', updateLineCount);
-
-const langOptions = document.querySelectorAll('.lang-option');
-langOptions.forEach(option => {
-  option.addEventListener('click', () => {
-    langOptions.forEach(opt => opt.classList.remove('selected'));
-    option.classList.add('selected');
-    document.getElementById('targetLanguage').value = option.getAttribute('data-value');
-  });
-});
-
-document.querySelector('.retry-icon').addEventListener('click', handleTranslate);
-
-// Ensure targetLanguage is valid on page load
-window.addEventListener('DOMContentLoaded', () => {
-  let targetLanguage = document.getElementById('targetLanguage').value.toLowerCase();
-  if (!SUPPORTED_LANGUAGES.includes(targetLanguage)) {
-    console.warn(`Invalid initial targetLanguage: ${targetLanguage}. Setting to default (javascript).`);
-    document.getElementById('targetLanguage').value = 'javascript';
-    // Update UI to reflect the default
-    langOptions.forEach(opt => {
-      if (opt.getAttribute('data-value').toLowerCase() === 'javascript') {
-        opt.classList.add('selected');
-      } else {
-        opt.classList.remove('selected');
+      // Attempt to highlight, catch errors
+      try {
+        Prism.highlightElement(codeBlock);
+      } catch (err) {
+        console.error(ERROR_MESSAGES.PRISM_HIGHLIGHT_FAILED, err);
+        codeBlock.className = `language-none ${isFallback ? 'fallback' : ''}`; // Fallback to plain text
       }
-    });
+    }
+
+    const buttonsContainer = document.querySelector('#translatedCode .buttons');
+    buttonsContainer.innerHTML = `
+      <button onclick="copyToClipboard()">Copy to Clipboard</button>
+      ${!isFallback ? `<button onclick="runCode('${language}')">Run Code</button>` : ''}
+    `;
   }
-});
+
+  function updateDebuggingSteps(steps, isFallback = false) {
+    const ul = document.querySelector('#debuggingSteps .debug-list');
+    ul.className = `debug-list ${isFallback ? 'fallback' : ''}`; // Add fallback class
+    ul.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
+    document.getElementById('debuggingSteps').classList.remove('collapsed');
+  }
+
+  function updateAlgorithm(steps, isFallback = false) {
+    const ol = document.querySelector('#algorithm .algorithm-list');
+    ol.className = `algorithm-list ${isFallback ? 'fallback' : ''}`; // Add fallback class
+    ol.innerHTML = steps.map(step => `<li>${escapeHTML(step)}</li>`).join('');
+    document.getElementById('algorithm').classList.remove('collapsed');
+  }
+
+  function runCode(language) {
+    const codeBlock = document.getElementById('translatedCodeBlock');
+    const code = codeBlock.innerText.trim();
+
+    if (!code) {
+      alert(ERROR_MESSAGES.NO_CODE_TO_RUN);
+      return;
+    }
+
+    navigator.clipboard.writeText(code)
+      .then(() => console.log('Code copied to clipboard.'))
+      .catch(err => console.error('Failed to copy:', err));
+
+    let url = "";
+    switch (language.toLowerCase()) {
+      case "python":
+        url = "https://www.programiz.com/python-programming/online-compiler/";
+        break;
+      case "javascript":
+        url = "https://playcode.io/new";
+        break;
+      case "typescript":
+        url = "https://www.typescriptlang.org/play";
+        break;
+      case "c":
+        url = "https://www.onlinegdb.com/online_c_compiler";
+        break;
+      case "cpp":
+        url = "https://www.onlinegdb.com/online_c++_compiler";
+        break;
+      case "csharp":
+        url = "https://dotnetfiddle.net/";
+        break;
+      case "php":
+        url = "https://www.onlinegdb.com/online_php_interpreter";
+        break;
+      default:
+        alert("No compiler available for this language yet!");
+        return;
+    }
+    window.open(url, "_blank");
+  }
+
+  function escapeHTML(text) {
+    return text.replace(/[&<>'"]/g, c => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[c]));
+  }
+
+  function retryTranslate() {
+    const content = document.getElementById('loadingContent');
+    if (content) {
+      const errorDiv = content.querySelector('.error-message');
+      if (errorDiv) errorDiv.remove();
+      const retryButton = content.querySelector('button');
+      if (retryButton) retryButton.remove();
+    }
+    stopLoading();
+    handleTranslate();
+  }
+
+  function retryImageUpload() {
+    const content = document.getElementById('loadingContent');
+    if (content) {
+      const errorDiv = content.querySelector('.error-message');
+      if (errorDiv) errorDiv.remove();
+      const retryButton = content.querySelector('button');
+      if (retryButton) retryButton.remove();
+    }
+    stopLoading();
+    // Trigger the upload or camera again
+    if (cameraButton) {
+      cameraButton.click(); // Reopen the camera modal
+      return;
+    } 
+    if (document.getElementById('uploadInput')) {
+      document.getElementById('uploadInput').click(); // Reopen file picker
+    }
+  }
+
+  function startLoading(customMessage = null) {
+    const overlay = document.getElementById('loadingOverlay');
+    const progress = document.getElementById('progressBar');
+    const fact = document.getElementById('funFact');
+
+    // Check if elements exist before accessing properties
+    if (!overlay || !progress || !fact) {
+      console.error(ERROR_MESSAGES.LOADING_ELEMENTS_MISSING, { overlay, progress, fact });
+      return;
+    }
+
+    // Ensure cameraError is cleared when loading starts
+    if (cameraError) {
+      cameraError.style.display = 'none';
+      cameraError.textContent = '';
+    }
+
+    // Reset any existing error messages or buttons
+    const content = document.getElementById('loadingContent');
+    if (content) {
+      const existingError = content.querySelector('.error-message');
+      if (existingError) existingError.remove();
+      const existingButton = content.querySelector('button');
+      if (existingButton) existingButton.remove();
+    }
+
+    overlay.style.display = 'flex';
+
+    let width = 0;
+    if (progressInterval) clearInterval(progressInterval);
+    progress.style.width = '0%';
+
+    progressInterval = setInterval(() => {
+      if (width >= 100) {
+        clearInterval(progressInterval);
+      } else {
+        width += 2;
+        progress.style.width = width + '%';
+      }
+    }, 200);
+
+    // 🧠 If a custom static message is passed (for upload)
+    if (customMessage) {
+      fact.textContent = customMessage;
+      return;
+    }
+
+    // ⏳ Default: countdown for translation
+    const facts = [
+      "JavaScript was created in just 10 days!",
+      "Python is named after Monty Python, not the snake!",
+      "HTML is not a programming language, it’s a markup language!",
+      "The first computer bug was a real moth!",
+      "Java and JavaScript are not the same!"
+    ];
+
+    fact.textContent = `Fun Fact: ${facts[Math.floor(Math.random() * facts.length)]}`;
+
+    let estimatedTime = 12;
+    if (countdownTimer) clearInterval(countdownTimer);
+    countdownTimer = setInterval(() => {
+      if (estimatedTime > 0) {
+        fact.textContent = `Translating... ~${estimatedTime} seconds remaining`;
+        estimatedTime--;
+      } else {
+        fact.textContent = "Almost done... Finalizing translation! ✨";
+      }
+    }, 1000);
+  }
+
+  function stopLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+      overlay.style.display = 'none';
+    }
+    if (progressInterval) clearInterval(progressInterval);
+    if (countdownTimer) clearInterval(countdownTimer);
+  }
+
+  function copyToClipboard() {
+    const codeBlock = document.getElementById('translatedCodeBlock');
+    const code = codeBlock.innerText.trim();
+
+    if (!code) {
+      alert(ERROR_MESSAGES.NOTHING_TO_COPY);
+      return;
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code)
+        .then(() => {
+          alert(ERROR_MESSAGES.COPY_SUCCESS);
+        })
+        .catch(err => {
+          console.error(ERROR_MESSAGES.CLIPBOARD_API_FAILED, err);
+          fallbackCopy(code);
+        });
+    } else {
+      fallbackCopy(code);
+    }
+  }
+
+  function fallbackCopy(text) {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try {
+      document.execCommand("copy");
+      alert(ERROR_MESSAGES.COPY_FALLBACK_SUCCESS);
+    } catch (err) {
+      alert(ERROR_MESSAGES.COPY_FALLBACK_FAILED);
+    }
+    document.body.removeChild(textarea);
+  }
+
+  function toggleCollapse(id) {
+    document.getElementById(id).classList.toggle('collapsed');
+  }
+
+  const javaCodeInput = document.getElementById('javaCode');
+  const lineCounter = document.getElementById('lineCounter');
+
+  function updateLineCount() {
+    const lines = javaCodeInput.value.split('\n').length;
+    lineCounter.textContent = `Lines: ${lines}`;
+  }
+  javaCodeInput.addEventListener('input', updateLineCount);
+  window.addEventListener('DOMContentLoaded', updateLineCount);
+
+  const langOptions = document.querySelectorAll('.lang-option');
+  langOptions.forEach(option => {
+    option.addEventListener('click', () => {
+      langOptions.forEach(opt => opt.classList.remove('selected'));
+      option.classList.add('selected');
+      document.getElementById('targetLanguage').value = option.getAttribute('data-value');
+    });
+  });
+
+  document.querySelector('.retry-icon').addEventListener('click', handleTranslate);
+
+  // Ensure targetLanguage is valid on page load
+  window.addEventListener('DOMContentLoaded', () => {
+    let targetLanguage = document.getElementById('targetLanguage').value.toLowerCase();
+    if (!SUPPORTED_LANGUAGES.includes(targetLanguage)) {
+      console.warn(ERROR_MESSAGES.INVALID_INITIAL_LANGUAGE(targetLanguage));
+      document.getElementById('targetLanguage').value = 'javascript';
+      // Update UI to reflect the default
+      langOptions.forEach(opt => {
+        if (opt.getAttribute('data-value').toLowerCase() === 'javascript') {
+          opt.classList.add('selected');
+        } else {
+          opt.classList.remove('selected');
+        }
+      });
+    }
+  });
+})();

@@ -5,7 +5,66 @@ const fs = require('fs');
 const fsPromises = require('fs').promises;
 const path = require('path');
 const app = express();
+
+// ---- Constants ----
 const PORT = process.env.PORT || 5000;
+const UPLOAD_DIR = path.join(__dirname, 'uploads');
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const IMAGE_MIMETYPE_PREFIX = 'image/';
+const ERROR_MESSAGES = {
+  MISSING_TRANSLATE_PARAMS: 'Missing javaCode or targetLanguage',
+  FILE_TOO_LARGE: `File too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB.`,
+  ONLY_IMAGES_ALLOWED: 'Only image files are allowed.',
+  NO_IMAGE_UPLOADED: 'No image uploaded.',
+  FAILED_UPLOAD_PROCESS: 'Failed to process image due to an unexpected server error.',
+  TRANSLATION_FAILED: 'Translation failed due to an unexpected server error.',
+  TRANSLATION_UNAVAILABLE: '// Translation unavailable due to backend error.',
+  DEBUG_STEPS_UNAVAILABLE: '⚠️ OpenRouter could not provide debugging steps.',
+  ALGORITHM_FAILED: '⚠️ Algorithm generation failed.',
+  JAVA_CODE_TOO_LARGE: 'javaCode is too large. Maximum length is 20KB.',
+  UNSUPPORTED_LANGUAGE: 'Unsupported targetLanguage.',
+};
+
+const SUPPORTED_TARGET_LANGUAGES = [
+  'python', 'javascript', 'csharp', 'cpp', 'c', 'php',
+];
+
+// Determine CORS origin based on environment
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? ['https://your-production-domain.com'] // TODO: Replace with your actual production domain
+  : ['http://localhost:3000', 'http://localhost:5173']; // Allow common development origins
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+};
+
+// Helper function for consistent error responses
+const sendErrorResponse = (res, statusCode, message) => {
+  res.status(statusCode).json({
+    translatedCode: [ERROR_MESSAGES.TRANSLATION_UNAVAILABLE],
+    debuggingSteps: [ERROR_MESSAGES.DEBUG_STEPS_UNAVAILABLE],
+    algorithm: [ERROR_MESSAGES.ALGORITHM_FAILED],
+    fallback: true,
+    error: message,
+  });
+};
+
+// Helper function to cleanup uploaded files
+const cleanupUploadedFile = async (filePath, sessionId) => {
+  try {
+    await fsPromises.unlink(filePath);
+    console.log(`🧹 [${sessionId}] Cleaned up uploaded file: ${filePath}`);
+  } catch (err) {
+    console.warn(`⚠️ [${sessionId}] Failed to delete file: ${err.message}`);
+  }
+};
 
 // ---- Uploads Directory ----
 const uploadDir = path.join(__dirname, 'uploads');
@@ -19,7 +78,7 @@ const { logTranslation, logError } = require('./firebase/logService');
 const { extractJavaCodeFromImage } = require('./vision/geminiImageParser');
 
 // ---- Middleware ----
-app.use(cors()); // Use open CORS for testing. Restrict in production!
+app.use(cors(corsOptions)); // Restrict CORS based on environment
 app.use(express.json());
 
 // ---- Health Check ----
@@ -33,8 +92,21 @@ app.post('/translate', async (req, res) => {
   const sessionId = `sess-${Date.now()}`;
 
   if (!javaCode || !targetLanguage) {
-    return res.status(400).json({ error: 'Missing javaCode or targetLanguage' });
+    return res.status(400).json({ error: ERROR_MESSAGES.MISSING_TRANSLATE_PARAMS });
   }
+
+  // Input validation for javaCode length
+  if (javaCode.length > 20000) { // Example limit: 20KB
+    return res.status(400).json({ error: ERROR_MESSAGES.JAVA_CODE_TOO_LARGE });
+  }
+
+  // Input validation for targetLanguage against supported languages
+  if (!SUPPORTED_TARGET_LANGUAGES.includes(targetLanguage)) {
+    return res.status(400).json({ error: ERROR_MESSAGES.UNSUPPORTED_LANGUAGE });
+  }
+
+  // TODO: Implement more robust input validation for javaCode (e.g., character escaping) and
+  // targetLanguage (e.g., whitelist of supported languages) to prevent abuse and ensure expected input.
 
   const input = { javaCode, targetLanguage };
 
@@ -51,9 +123,9 @@ app.post('/translate', async (req, res) => {
     if (!hasAll) {
       console.warn(`⚠️ [${sessionId}] Incomplete result. Returning fallback...`);
       result = {
-        translatedCode: (result.translatedCode && result.translatedCode.length) ? result.translatedCode : ['// Translation unavailable due to backend error.'],
-        debuggingSteps: (result.debuggingSteps && result.debuggingSteps.length) ? result.debuggingSteps : ['⚠️ OpenRouter could not provide debugging steps.'],
-        algorithm: (result.algorithm && result.algorithm.length) ? result.algorithm : ['⚠️ Algorithm generation failed.'],
+        translatedCode: (result.translatedCode && result.translatedCode.length) ? result.translatedCode : [ERROR_MESSAGES.TRANSLATION_UNAVAILABLE],
+        debuggingSteps: (result.debuggingSteps && result.debuggingSteps.length) ? result.debuggingSteps : [ERROR_MESSAGES.DEBUG_STEPS_UNAVAILABLE],
+        algorithm: (result.algorithm && result.algorithm.length) ? result.algorithm : [ERROR_MESSAGES.ALGORITHM_FAILED],
         fallback: true
       };
       await logTranslation(sessionId, { ...result, input }, 'fallback', 'openrouter');
@@ -68,31 +140,45 @@ app.post('/translate', async (req, res) => {
     console.error(`❌ [${sessionId}] Translation failed: ${err.message}`);
     await logError(sessionId, javaCode, targetLanguage, err.message);
 
-    return res.status(500).json({
-      translatedCode: ['// Translation unavailable due to backend error.'],
-      debuggingSteps: ['⚠️ OpenRouter could not provide debugging steps.'],
-      algorithm: ['⚠️ Algorithm generation failed.'],
-      fallback: true
-    });
+    // Use helper for consistent error response
+    sendErrorResponse(res, 500, ERROR_MESSAGES.TRANSLATION_FAILED);
   }
 });
 
 // ---- File Upload Route ----
 const upload = multer({
-  dest: uploadDir,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  dest: UPLOAD_DIR,
+  limits: { fileSize: MAX_FILE_SIZE }, // 5MB max
   fileFilter: (req, file, cb) => {
-    if (!file.mimetype.startsWith('image/')) {
-      return cb(new Error('Only image files are allowed.'), false);
+    if (!file.mimetype.startsWith(IMAGE_MIMETYPE_PREFIX)) {
+      return cb(new Error(ERROR_MESSAGES.ONLY_IMAGES_ALLOWED), false);
     }
     cb(null, true);
   }
 });
 
-app.post('/upload', upload.single('image'), async (req, res) => {
+// TODO: Implement more robust input validation for uploaded images (e.g., deeper content analysis to prevent malicious uploads) and consider image resizing/optimization.
+
+app.post('/upload', (req, res, next) => {
+  upload.single('image')(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: ERROR_MESSAGES.FILE_TOO_LARGE });
+      }
+      return res.status(400).json({ error: err.message });
+    } else if (err) {
+      if (err.message === ERROR_MESSAGES.ONLY_IMAGES_ALLOWED) {
+        return res.status(400).json({ error: err.message });
+      }
+      console.error(`❌ [upload] Unknown error: ${err.message}`);
+      return res.status(500).json({ error: 'Failed to upload image.' });
+    }
+    next();
+  });
+}, async (req, res) => {
   const file = req.file;
   if (!file) {
-    return res.status(400).json({ error: 'No image uploaded or invalid file type/size.' });
+    return res.status(400).json({ error: ERROR_MESSAGES.NO_IMAGE_UPLOADED });
   }
 
   const sessionId = `upload-${Date.now()}`;
@@ -102,9 +188,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     const result = await extractJavaCodeFromImage(file.path);
 
     // Always cleanup the uploaded file
-    await fsPromises.unlink(file.path).catch(err =>
-      console.warn(`⚠️ [${sessionId}] Failed to delete file: ${err.message}`)
-    );
+    await cleanupUploadedFile(file.path, sessionId);
 
     if (result.error) {
       console.log(`❌ [${sessionId}] No Java code detected. Extracted text: ${result.extractedText}`);
@@ -123,11 +207,9 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     console.error(`❌ [${sessionId}] Upload error: ${err.message}`);
     // Cleanup file in case of error
     if (file && file.path) {
-      await fsPromises.unlink(file.path).catch(err =>
-        console.warn(`⚠️ [${sessionId}] Failed to delete file: ${err.message}`)
-      );
+      await cleanupUploadedFile(file.path, sessionId);
     }
-    res.status(500).json({ error: 'Failed to process image.' });
+    sendErrorResponse(res, 500, ERROR_MESSAGES.FAILED_UPLOAD_PROCESS);
   }
 });
 
