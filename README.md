@@ -1,26 +1,26 @@
-# 📘 Codemorpher
+# Codemorpher
 
 Codemorpher is a full-stack web application that allows users to input Java code and get translated versions in multiple languages like JavaScript, Python, C, C++, PHP, and more. It also generates debugging steps and algorithms, with full test coverage powered by Cypress.
 
-## 🌐 Live Demo
+## Live Demo
 
 - Frontend: https://monumental-peony-b9a6b3.netlify.app
 - Backend API (Ping): https://codemorpher-backend.onrender.com/ping
 - Telegram Bot: [@CodemorpherAIbot](https://t.me/CodemorpherAIbot)
 
-## 🚀 Features
+## Features
 
-- ✨ **Multi-language Translation**: Java → JavaScript, Python, C, C++, C#, PHP, and more  
-- 🪄 **Debugging Steps**: Line-by-line guidance to trace and fix logic  
-- 📚 **Algorithm Outline**: High-level pseudocode summary of your logic  
-- 📋 **Copy & Run**: Copy translated code or run it in an online compiler  
-- 📱 **Responsive Design**: Supports mobile, tablet, and desktop viewports  
-- 🤖 **Telegram Bot**: Access Codemorpher's translation capabilities directly through Telegram
-- 📷 **Image-to-Code**: Upload and extract Java code from images using Google's Gemini API
-- ✅ **End-to-End Tests**: Comprehensive Cypress suite with screenshots and Mochawesome reports  
-- ⚙️ **Error Handling**: Graceful fallback for network/server errors
+-  **Multi-language Translation**: Java → JavaScript, Python, C, C++, C#, PHP, and more  
+-  **Debugging Steps**: Line-by-line guidance to trace and fix logic  
+-  **Algorithm Outline**: High-level pseudocode summary of your logic  
+-  **Copy & Run**: Copy translated code or run it in an online compiler  
+-  **Responsive Design**: Supports mobile, tablet, and desktop viewports  
+-  **Telegram Bot**: Access Codemorpher's translation capabilities directly through Telegram
+-  **Image-to-Code**: Upload and extract Java code from images using Google's Gemini API
+-  **End-to-End Tests**: Comprehensive Cypress suite with screenshots and Mochawesome reports  
+-  **Error Handling**: Graceful fallback for network/server errors
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend:
 - Vanilla HTML, CSS, JavaScript  
@@ -47,7 +47,7 @@ Codemorpher is a full-stack web application that allows users to input Java code
 - Backend: Render
 - Bot: Render (webhook)
 
-## 📂 Project Structure
+##  Project Structure
 
 ```
 CODEMORPHER/
@@ -79,7 +79,7 @@ CODEMORPHER/
 └── README.md                       # Project documentation
 ```
 
-## 🧪 Running the Test Suite & Generating Reports
+##  Running the Test Suite & Generating Reports
 
 ### Install Dependencies
 ```bash
@@ -102,7 +102,7 @@ This will:
 
 The test suite includes UI checks, translation validation, error handling, multi-language loop, responsive views, clipboard functionality, run button, and debugging step verification.
 
-## 🤖 Telegram Bot Usage
+##  Telegram Bot Usage
 
 Access Codemorpher's translation features directly through Telegram:
 
@@ -125,10 +125,10 @@ Access Codemorpher's translation features directly through Telegram:
 
 The bot uses Meta Llama to validate Java code and Google's Gemini API for image code extraction, ensuring accurate translations.
 
-## 🧑‍💻 How to Contribute
+##  How to Contribute
 
 1. Fork this repository
 2. Create your feature branch: `git checkout -b feature/my-feature`
-3. Commit your changes: `git commit -m "✨ Add my feature"`
+3. Commit your changes: `git commit -m " Add my feature"`
 4. Push to the branch: `git push origin feature/my-feature`
-5. Open a Pull Request ✅
+5. Open a Pull Request 
