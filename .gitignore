@@ -59,3 +59,5 @@ frontend/coverage/
 # Extra logs
 *.log
 logs/
+
+frontend/test-images/
