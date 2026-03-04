@@ -30,17 +30,18 @@ const SUPPORTED_TARGET_LANGUAGES = [
 ];
 
 // Determine CORS origin based on environment
-const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? ['https://your-production-domain.com'] // TODO: Replace with your actual production domain
-  : ['http://localhost:3000', 'http://localhost:5173']; // Allow common development origins
+const allowedOrigins =
+  process.env.NODE_ENV === 'production'
+    ? [process.env.ALLOWED_ORIGIN].filter(Boolean) // e.g. https://codemorpher.onrender.com
+    : ['http://localhost:3000', 'http://localhost:5173']; // Allow common development origins
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+    // Allow non-browser tools (no Origin) and allowed origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
 };

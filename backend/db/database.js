@@ -1,7 +1,14 @@
-const Database = require('better-sqlite3');
+const fs = require('fs');
 const path = require('path');
+const Database = require('better-sqlite3');
 
-const DB_PATH = path.join(__dirname, 'codemorpher.db');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'codemorpher.db');
+
+// Ensure directory exists (important when using a volume like /data/db/codemorpher.db)
+const dbDir = path.dirname(DB_PATH);
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
 
 const db = new Database(DB_PATH);
 

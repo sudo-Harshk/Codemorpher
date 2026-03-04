@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+*.log
+logs/
+Dockerfile
+.dockerignore
+.env
+uploads
+db/*.db
+db/*.db-shm
+db/*.db-wal
+
