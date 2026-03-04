@@ -60,21 +60,6 @@ cd frontend
 npm install
 ```
 
-### Run All Tests + Generate HTML Report
-```bash
-npm run test:report
-```
-
-This will:
-
-1. Clean out any old reports
-2. Launch Cypress in headless mode
-3. Merge all Mochawesome JSON results
-4. Generate a single HTML report with inlined screenshots
-5. Open the report in your default browser
-
-The test suite includes UI checks, translation validation, error handling, multi-language loop, responsive views, clipboard functionality, run button, and debugging step verification.
-
 ## Documentation
 
 For more detailed technical information, please refer to the files in the `docs` folder:
