@@ -10,37 +10,37 @@ The system operates using a standard client-server architecture:
 graph TD
     User([User])
     
-    subgraph Frontend [Frontend (React + Vite)]
-        UI[Translator UI]
-        Cam[Camera Modal]
+    subgraph Frontend ["Frontend (React + Vite)"]
+        UI["Translator UI"]
+        Cam["Camera Modal"]
     end
     
-    subgraph Backend [Backend (Node.js + Express)]
-        API[Express API]
-        Vision[Vision Service]
-        Translators[Translation Service]
-        DB[(SQLite Database)]
+    subgraph Backend ["Backend (Node.js + Express)"]
+        API["Express API"]
+        Vision["Vision Service"]
+        Translators["Translation Service"]
+        DB[("SQLite Database")]
     end
     
-    subgraph External [External APIs]
-        Gemini[Google Gemini API]
-        OpenRouter[OpenRouter API]
+    subgraph External ["External APIs"]
+        Gemini["Google Gemini API"]
+        OpenRouter["OpenRouter API"]
     end
     
-    User -->|Input Code / Click Translate| UI
-    User -->|Upload Image| Cam
+    User -->|"Input Code / Click Translate"| UI
+    User -->|"Upload Image"| Cam
     
-    Cam -->|POST /upload| API
-    UI -->|POST /translate| API
-    UI -->|GET /history| API
+    Cam -->|"POST /upload"| API
+    UI -->|"POST /translate"| API
+    UI -->|"GET /history"| API
     
-    API -->|Process Image| Vision
-    API -->|Manage Translation| Translators
+    API -->|"Process Image"| Vision
+    API -->|"Manage Translation"| Translators
     
-    Vision <-->|Extract Text| Gemini
-    Translators <-->|LLM Queries| OpenRouter
+    Vision <-->|"Extract Text"| Gemini
+    Translators <-->|"LLM Queries"| OpenRouter
     
-    API <-->|Log & Fetch| DB
+    API <-->|"Log & Fetch"| DB
 ```
 
 1. **Frontend (Client)**: Built with React and Vite, focusing on a responsive and split-view design for side-by-side code input and translation output.
