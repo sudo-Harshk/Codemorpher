@@ -1,0 +1,61 @@
+# ------------------------------------------
+# System Dependencies
+# ------------------------------------------
+node_modules/
+.DS_Store
+Thumbs.db
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ------------------------------------------
+# Environment Variables
+# ------------------------------------------
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+firebaseKey.json
+
+# ------------------------------------------
+# Frontend (React + Vite)
+# ------------------------------------------
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/.eslintcache
+
+# ------------------------------------------
+# Backend (Node.js)
+# ------------------------------------------
+backend/uploads/
+backend/firebase/firebaseKey.json
+
+# SQLite Database Files
+backend/db/*.db
+backend/db/*.db-shm
+backend/db/*.db-wal
+backend/db/*.sqlite
+backend/db/*.sqlite3
+
+# Ignoring root or dynamically created DB files to be safe
+*.db-shm
+*.db-wal
+codemorpher.db-shm
+codemorpher.db-wal
+
+
+# Editor and IDE settings
+.vscode/
+.idea/
+
+# Coverage / test output
+coverage/
+frontend/coverage/
+.nyc_output/
+
+# Extra logs
+*.log
+logs/

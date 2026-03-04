@@ -12,7 +12,6 @@ graph TD
     
     subgraph Frontend ["Frontend (React + Vite)"]
         UI["Translator UI"]
-        Cam["Camera Modal"]
     end
     
     subgraph Backend ["Backend (Node.js + Express)"]
@@ -28,9 +27,9 @@ graph TD
     end
     
     User -->|"Input Code / Click Translate"| UI
-    User -->|"Upload Image"| Cam
+    User -->|"Upload Image"| UI
     
-    Cam -->|"POST /upload"| API
+    UI -->|"POST /upload"| API
     UI -->|"POST /translate"| API
     UI -->|"GET /history"| API
     
@@ -58,17 +57,18 @@ graph TD
 - **Key Dependencies**: 
   - `react-syntax-highlighter` (Prism) for rendering code with syntax highlighting.
   - `react-router-dom` for application routing (Translator vs. History view).
-- **Core Components**:
+- **Core Components & Hooks**:
   - `TranslatorPage`: The main split-view interface.
   - `CodeInput` & `CodeOutput`: Handles user code entry and displaying results.
-  - `CameraModal`: Interface for image uploading and camera capture.
   - `LanguagePicker`: Selection for the target translation language.
+  - `useTranslator`: Custom hook managing the translation state, loading, and error handling.
+  - `useImageUpload`: Custom hook managing the image upload state and extraction workflow.
 
 ### Backend
 - **Framework**: Node.js + Express.
 - **Data Persistence**: `better-sqlite3` is used to maintain a lightweight, local database (`codemorpher.db`) for tracking user requests.
 - **Key Modules**:
-  - `/translators`: Contains `useOpenRouter.js` which manages prompts and communication with the OpenRouter API.
+  - `/translators`: Contains `translator.js` which employs a provider pattern to abstract translation engines (e.g., OpenRouter or Mock providers). It also houses `useOpenRouter.js` for OpenRouter-specific logic.
   - `/vision`: Contains `geminiImageParser.js` which handles the integration with Google's Gemini API for prompt-based image-to-text extraction.
   - `/db`: Contains `database.js` for schema initialization and `logService.js` for logging events.
 - **Routing**: 

@@ -1,6 +1,6 @@
 # Codemorpher
 
-Codemorpher is a full-stack web application that allows users to input Java code and get translated versions in multiple languages like JavaScript, Python, C, C++, PHP, and more. It also generates debugging steps and algorithms, with full test coverage powered by Cypress.
+Codemorpher is a full-stack web application that allows users to input Java code and get translated versions in multiple languages like JavaScript, Python, C, C++, PHP, and more. It also generates debugging steps and algorithms.
 
 ## Local Setup
 
@@ -27,10 +27,9 @@ The frontend will run at `http://localhost:5173`.
 -  **Multi-language Translation**: Java → JavaScript, Python, C, C++, C#, PHP, and more  
 -  **Debugging Steps**: Line-by-line guidance to trace and fix logic  
 -  **Algorithm Outline**: High-level pseudocode summary of your logic  
--  **Copy & Run**: Copy translated code or run it in an online compiler  
+-  **Copy**: Copy translated code directly from the UI  
 -  **Responsive Design**: Supports mobile, tablet, and desktop viewports  
 -  **Image-to-Code**: Upload and extract Java code from images using Google's Gemini API
--  **End-to-End Tests**: Comprehensive Cypress suite with screenshots and Mochawesome reports  
 -  **Error Handling**: Graceful fallback for network/server errors
 
 ## Tech Stack
@@ -43,16 +42,15 @@ The frontend will run at `http://localhost:5173`.
 
 ### Backend:
 - Node.js + Express  
-- OpenRouter GPT (primary) 
+- Translator provider layer (`translator.js`) with OpenRouter as the primary engine (plus a mock provider for local testing) 
 - SQLite (`better-sqlite3`) for logging translation requests & errors
 
 ### Vision:
 - Google Gemini API for image code extraction
-- OpenRouter API with Meta Llama for code validation
 
-### Testing & Reporting:
-- Cypress (E2E)  
-- Mochawesome, mochawesome-merge, and marge for HTML reports
+### Testing:
+- The current setup does not include an automated E2E test runner in this `frontend` app.
+- You can add your own unit or integration tests as needed for your workflow.
 
 ##  Running the Test Suite & Generating Reports
 

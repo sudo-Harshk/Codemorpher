@@ -26,6 +26,7 @@ Follow these instructions to set up the project on your local machine for develo
    # Backend API details
    OPENROUTER_API_KEY=your_openrouter_api_key_here
    GEMINI_API_KEY=your_gemini_api_key_here
+   TRANSLATOR_PROVIDER=openrouter # Options: 'openrouter' or 'mock'
    PORT=5000
    ```
 4. **Start the Express Server**:

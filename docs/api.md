@@ -19,7 +19,7 @@ Fetches the last 50 translations stored in the local SQLite database.
   - `sessionId`: The session generated internally
   - `targetLanguage`: The language translated into
   - `status`: Expected string `'success'` or error code
-  - `engineUsed`: i.e., `'openrouter'`
+  - `engineUsed`: The translation provider used (e.g., `'openrouter'` or `'mock'`)
   - `timestamp`: Date recorded
   - `javaCode`: Input original script
   - `translatedCode`: JSON serialized outcome
