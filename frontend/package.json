@@ -1,0 +1,22 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "Codemorpher - Java to Multi-language Converter Frontend",
+  "scripts": {
+    "dev": "vite --config vite.config.mts",
+    "build": "vite build --config vite.config.mts",
+    "preview": "vite preview --config vite.config.mts"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.1",
+    "@vitejs/plugin-react": "^5.1.4",
+    "tailwindcss": "^4.2.1",
+    "vite": "^6.0.0"
+  },
+  "dependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.1",
+    "react-syntax-highlighter": "^16.1.1"
+  }
+}
