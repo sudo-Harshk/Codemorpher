@@ -3,7 +3,7 @@ const fs = require("fs").promises;
 
 // Initialize Gemini Vision API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Use a model that supports vision
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 async function extractJavaCodeFromImage(imagePath) {
   const sessionId = `vision-${Date.now()}`;

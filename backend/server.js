@@ -73,7 +73,7 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // ---- Import Services ----
-const useOpenRouter = require('./translators/useOpenRouter');
+const { translateWithProvider } = require('./translators/translator');
 const { logTranslation, logError } = require('./db/logService');
 const db = require('./db/database');
 const { extractJavaCodeFromImage } = require('./vision/geminiImageParser');
@@ -125,8 +125,17 @@ app.post('/translate', async (req, res) => {
   const input = { javaCode, targetLanguage };
 
   try {
-    console.log(`[${sessionId}] Translating using OpenRouter...`);
-    let result = await useOpenRouter(javaCode, targetLanguage);
+    console.log(`[${sessionId}] Starting translation...`);
+    const translation = await translateWithProvider(javaCode, targetLanguage, {
+      sessionId,
+    });
+
+    let result = {
+      translatedCode: translation.translatedCode,
+      debuggingSteps: translation.debuggingSteps,
+      algorithm: translation.algorithm,
+      fallback: Boolean(translation.fallback),
+    };
 
     // Defensive: ensure all three sections are present and arrays
     const hasAll =
@@ -142,12 +151,22 @@ app.post('/translate', async (req, res) => {
         algorithm: (result.algorithm && result.algorithm.length) ? result.algorithm : [ERROR_MESSAGES.ALGORITHM_FAILED],
         fallback: true
       };
-      await logTranslation(sessionId, { ...result, input }, 'fallback', 'openrouter');
+      await logTranslation(
+        sessionId,
+        { ...result, input },
+        'fallback',
+        translation.provider || 'openrouter'
+      );
       return res.status(200).json(result);
     }
 
-    await logTranslation(sessionId, { ...result, input }, 'success', 'openrouter');
-    console.log(`✅ [${sessionId}] Translation complete.`);
+    await logTranslation(
+      sessionId,
+      { ...result, input },
+      'success',
+      translation.provider || 'openrouter'
+    );
+    console.log(`✅ [${sessionId}] Translation complete via provider="${translation.provider}".`);
     return res.json(result);
 
   } catch (err) {

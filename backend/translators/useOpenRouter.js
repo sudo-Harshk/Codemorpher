@@ -2,6 +2,7 @@ const { OpenRouter } = require('@openrouter/sdk');
 require('dotenv').config();
 const fsPromises = require('fs').promises;
 const path = require('path');
+const { parseAndValidate } = require('./parser');
 
 const uploadDir = path.join(__dirname, '../uploads');
 
@@ -64,7 +65,7 @@ ${javaCode}
     throw new Error('OpenRouter API error: ' + err.message);
   }
 
-  const parsed = parseGPTOutput(reply, sessionId);
+  const parsed = parseAndValidate(reply, sessionId);
   
   // Defensive: Ensure all sections are non-empty arrays
   const result = {
@@ -75,54 +76,6 @@ ${javaCode}
 
   console.log(`📤 [${sessionId}] useOpenRouter returning:`, result); // Add logging
   return result;
-}
-
-function parseGPTOutput(reply, sessionId) {
-  // Try to be resilient in case the model adds any extra text around the JSON
-  let jsonText = reply;
-  try {
-    const firstBrace = reply.indexOf('{');
-    const lastBrace = reply.lastIndexOf('}');
-    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-      jsonText = reply.slice(firstBrace, lastBrace + 1);
-    }
-
-    const raw = JSON.parse(jsonText);
-
-    const translatedCodeString =
-      typeof raw.translatedCode === 'string' ? raw.translatedCode : '';
-    const translatedCode = translatedCodeString
-      ? translatedCodeString.split('\n').filter(line => line.trim())
-      : [];
-
-    const normalizeArray = (value) =>
-      Array.isArray(value)
-        ? value.map((item) => (typeof item === 'string' ? item.trim() : '')).filter(Boolean)
-        : [];
-
-    const debuggingSteps = normalizeArray(raw.debuggingSteps);
-    const algorithm = normalizeArray(raw.algorithm);
-
-    if (translatedCode.length === 0 || debuggingSteps.length === 0 || algorithm.length === 0) {
-      console.warn(
-        `⚠️ [${sessionId}] parseGPTOutput: One or more sections missing after JSON parse!`,
-        { translatedCode, debuggingSteps, algorithm }
-      );
-    }
-
-    return {
-      translatedCode,
-      debuggingSteps,
-      algorithm,
-    };
-  } catch (err) {
-    console.warn(`⚠️ [${sessionId}] parseGPTOutput: Failed to parse JSON reply:`, err.message);
-    return {
-      translatedCode: [],
-      debuggingSteps: [],
-      algorithm: [],
-    };
-  }
 }
 
 // Safer, move this to your server entrypoint if using in production
