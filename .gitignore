@@ -12,11 +12,8 @@ yarn-error.log*
 # ------------------------------------------
 # Environment Variables
 # ------------------------------------------
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env*
+!.env.example
 firebaseKey.json
 
 # ------------------------------------------
@@ -26,11 +23,14 @@ frontend/dist/
 frontend/dist-ssr/
 frontend/*.local
 frontend/.eslintcache
+frontend/test-images/*
+!frontend/test-images/.gitkeep
 
 # ------------------------------------------
 # Backend (Node.js)
 # ------------------------------------------
-backend/uploads/
+backend/uploads/*
+!backend/uploads/.gitkeep
 backend/firebase/firebaseKey.json
 
 # SQLite Database Files
@@ -46,7 +46,6 @@ backend/db/*.sqlite3
 codemorpher.db-shm
 codemorpher.db-wal
 
-
 # Editor and IDE settings
 .vscode/
 .idea/
@@ -60,4 +59,6 @@ frontend/coverage/
 *.log
 logs/
 
-frontend/test-images/
+
+clean-structure.js
+clean-structure.ps1

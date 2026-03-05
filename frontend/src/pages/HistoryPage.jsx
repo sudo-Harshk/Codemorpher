@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import HistoryTable from '../components/HistoryTable.jsx';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export default function HistoryPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,7 +12,7 @@ export default function HistoryPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/history');
+      const res = await fetch(`${BACKEND_URL}/history`);
       if (!res.ok) throw new Error('Failed to load history');
       const data = await res.json();
       setRows(data);

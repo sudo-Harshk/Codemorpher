@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export default function useImageUpload({ onCode, onError }) {
   const [uploading, setUploading] = useState(false);
 
@@ -12,7 +14,7 @@ export default function useImageUpload({ onCode, onError }) {
       const formData = new FormData();
       formData.append('image', file);
 
-      const res = await fetch('/upload', { method: 'POST', body: formData });
+      const res = await fetch(`${BACKEND_URL}/upload`, { method: 'POST', body: formData });
       const data = await res.json();
 
       if (!res.ok) {

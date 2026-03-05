@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export default function useTranslator() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -16,7 +18,7 @@ export default function useTranslator() {
     setFallback(false);
 
     try {
-      const res = await fetch('/translate', {
+      const res = await fetch(`${BACKEND_URL}/translate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ javaCode, targetLanguage }),
