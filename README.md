@@ -31,22 +31,28 @@ The frontend will run at `http://localhost:5173`.
 -  **Responsive Design**: Supports mobile, tablet, and desktop viewports  
 -  **Image-to-Code**: Upload and extract Java code from images using Google's Gemini API
 -  **Error Handling**: Graceful fallback for network/server errors
+-  **Docker Ready**: Production-optimized `Dockerfile` setups with Nginx for the frontend.
 
 ## Tech Stack
 
 ### Frontend:
 - React + Vite  
-- Tailwind CSS for styling
+- Tailwind CSS v4 for styling
 - react-syntax-highlighter (Prism) for code highlighting
 - React Router for navigation
+- Nginx for production serving locally
 
 ### Backend:
 - Node.js + Express  
-- Translator provider layer (`translator.js`) with OpenRouter as the primary engine (plus a mock provider for local testing) 
+- Translator provider layer (`translator.js`) with OpenRouter SDK and Google GenAI SDK as primary engines (plus a mock provider for local testing) 
 - SQLite (`better-sqlite3`) for logging translation requests & errors
+- Multer for robust multipart image upload handling
 
 ### Vision:
-- Google Gemini API for image code extraction
+- Google Gemini API (`@google/genai`) for image code extraction
+
+### Containerization:
+- Native Dockerfile support for seamless container deployments.
 
 ### Testing:
 - The current setup does not include an automated E2E test runner in this `frontend` app.

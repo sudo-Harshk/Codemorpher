@@ -10,7 +10,7 @@ The system operates using a standard client-server architecture:
 graph TD
     User([User])
     
-    subgraph Frontend ["Frontend (React + Vite)"]
+    subgraph Frontend ["Frontend (React + Vite, Nginx in Prod)"]
         UI["Translator UI"]
     end
     
@@ -19,6 +19,11 @@ graph TD
         Vision["Vision Service"]
         Translators["Translation Service"]
         DB[("SQLite Database")]
+    end
+    
+    subgraph Containerization ["Docker"]
+        DockerBackend["Backend Container"]
+        DockerFrontend["Frontend Container (Nginx)"]
     end
     
     subgraph External ["External APIs"]
@@ -42,9 +47,10 @@ graph TD
     API <-->|"Log & Fetch"| DB
 ```
 
-1. **Frontend (Client)**: Built with React and Vite, focusing on a responsive and split-view design for side-by-side code input and translation output.
-2. **Backend (Server)**: A Node.js and Express server that handles incoming translation requests, processes images for code extraction, and interacts with external APIs.
-3. **Database**: SQLite is used for local logging of successful translations and errors to maintain a history.
+1. **Frontend (Client)**: Built with React and Vite, utilizing Tailwind CSS v4. In production, it is served via Nginx configured with reverse proxies to the backend APIs, focusing on a responsive and split-view design for side-by-side code input and translation output.
+2. **Backend (Server)**: A Node.js and Express server that handles incoming translation requests, processes images for code extraction, and interacts with external APIs. It includes modular architecture separating vision processing and translation engines.
+3. **Database**: SQLite (`better-sqlite3`) is used for local logging of successful translations and errors to maintain a history.
+4. **Containerization**: Both the frontend and backend include `Dockerfile`s optimized for multi-stage building and running as unprivileged users (Alpine Linux base).
 4. **External Services**: 
    - **OpenRouter API**: Used as the primary engine for translating code, generating debugging steps, and algorithm outlines.
    - **Google Gemini API**: Utilized for parsing images and extracting Java code.

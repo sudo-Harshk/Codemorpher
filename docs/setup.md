@@ -51,3 +51,23 @@ Follow these instructions to set up the project on your local machine for develo
    npm run dev
    ```
    *The client UI runs at http://localhost:5173*
+
+## Docker Setup
+
+Codemorpher supports containerized deployment using Docker.
+
+1. **Build and Run the Backend Image**:
+   ```bash
+   cd backend
+   docker build -t codemorpher-backend .
+   docker run -p 8080:8080 --env-file .env codemorpher-backend
+   ```
+   
+2. **Build and Run the Frontend Image (with Nginx)**:
+   ```bash
+   cd frontend
+   docker build -t codemorpher-frontend .
+   docker run -p 80:80 -e BACKEND_URL=http://localhost:8080 codemorpher-frontend
+   ```
+
+*Note: The frontend uses an Nginx proxy to forward requests to the backend URL defined by the `BACKEND_URL` environment variable during container startup.*
