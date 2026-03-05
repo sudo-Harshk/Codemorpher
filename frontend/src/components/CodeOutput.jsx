@@ -17,6 +17,7 @@ const LANG_MAP = {
 export default function CodeOutput({ result, targetLanguage, fallback, loading = false }) {
   const [activeTab, setActiveTab] = useState('Code');
   const [copied, setCopied] = useState(false);
+  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
 
   const codeStr = Array.isArray(result?.translatedCode)
     ? result.translatedCode.join('\n')
@@ -32,15 +33,12 @@ export default function CodeOutput({ result, targetLanguage, fallback, loading =
   return (
     <div className="flex flex-col h-full">
       {/* Tab bar */}
-      <div className="flex items-center border-b border-[#e5e4d0] mb-6 gap-2 px-2">
+      <div className="flex items-center mb-6 gap-2 px-2" style={{ borderBottom: '1px solid var(--border)' }}>
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-t-lg ${activeTab === tab
-              ? 'bg-[#667eea]/10 text-[#667eea] border-b-2 border-[#667eea]/60'
-              : 'text-[#718096] hover:text-[#2d3748] hover:bg-[#f8f7ed] border-b-2 border-transparent'
-              }`}
+            className={`px-4 py-2 text-sm font-semibold rounded-t-lg tab-btn ${activeTab === tab ? 'active' : ''}`}
           >
             {tab}
           </button>
@@ -48,45 +46,63 @@ export default function CodeOutput({ result, targetLanguage, fallback, loading =
       </div>
 
       {/* Tab content */}
-      <div className="flex-1 overflow-auto rounded-xl shadow-inner shadow-gray-300/40" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.65) 0%, rgba(240,240,219,0.65) 100%)'}}>
+      <div className="flex-1 overflow-auto rounded-xl shadow-inner theme-surface" style={{ backgroundColor: 'var(--surface)' }}>
         {activeTab === 'Code' && (
-          <div className={`rounded-xl overflow-hidden border h-full flex flex-col ${fallback ? 'border-[#e53e3e]/30' : 'border-[#e5e4d0]'}`} style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.75) 0%, rgba(225,217,188,0.75) 100%)'}}>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e4d0" style={{background: 'linear-gradient(90deg, rgba(255,255,255,0.75) 0%, rgba(240,240,219,0.75) 100%)'}}>
-              <span className="text-xs font-semibold text-[#718096] uppercase tracking-widest flex items-center gap-2">
-                <span className="flex gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-500/80"></span><span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span><span className="w-2.5 h-2.5 rounded-full bg-green-500/80"></span></span>
+          <div
+            className="rounded-xl overflow-hidden border h-full flex flex-col theme-surface"
+            style={{
+              borderColor: fallback ? 'var(--danger)' : 'var(--border)',
+              backgroundColor: 'var(--surface)',
+            }}
+          >
+            <div
+              className="flex items-center justify-between px-4 py-3 theme-surface"
+              style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--surface-2)' }}
+            >
+              <span className="text-xs font-semibold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                <span className="flex gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
+                </span>
                 {targetLanguage}
               </span>
               {!loading && codeStr && (
                 <button
                   onClick={handleCopy}
-                  className="text-xs font-medium text-[#2d3748]/60 hover:text-[#2d3748] transition-colors px-3 py-1.5 rounded-md" style={{background: 'linear-gradient(135deg, rgba(248,247,237,1) 0%, rgba(229,228,208,1) 100%)'}}
+                  className="text-xs font-medium transition-colors px-3 py-1.5 rounded-md"
+                  style={{
+                    backgroundColor: 'var(--surface-2)',
+                    color: 'var(--text-muted)',
+                    border: '1px solid var(--border)',
+                  }}
                 >
                   {copied ? '✓ Copied' : 'Copy Code'}
                 </button>
               )}
             </div>
             {loading ? (
-              <div className="p-6 animate-pulse flex-1" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(240,240,219,0.55) 100%)'}}>
+              <div className="p-6 flex-1 theme-surface" style={{ backgroundColor: 'var(--surface)' }}>
                 <div className="space-y-4">
-                  <div className="h-4 bg-[#e5e4d0] rounded w-11/12" />
-                  <div className="h-4 bg-[#e5e4d0] rounded w-10/12" />
-                  <div className="h-4 bg-[#e5e4d0] rounded w-9/12" />
-                  <div className="h-4 bg-[#e5e4d0] rounded w-11/12" />
-                  <div className="h-4 bg-[#e5e4d0] rounded w-8/12" />
-                  <div className="h-4 bg-[#e5e4d0] rounded w-10/12" />
+                  <div className="skeleton h-4 rounded w-11/12" />
+                  <div className="skeleton h-4 rounded w-10/12" />
+                  <div className="skeleton h-4 rounded w-9/12" />
+                  <div className="skeleton h-4 rounded w-11/12" />
+                  <div className="skeleton h-4 rounded w-8/12" />
+                  <div className="skeleton h-4 rounded w-10/12" />
                 </div>
               </div>
             ) : codeStr ? (
               <SyntaxHighlighter
                 language={LANG_MAP[targetLanguage] || 'text'}
-                style={oneLight}
+                style={isDark ? vscDarkPlus : oneLight}
                 customStyle={{ margin: 0, borderRadius: 0, fontSize: '0.875rem', padding: '1.5rem', flex: 1, backgroundColor: 'transparent' }}
                 showLineNumbers
               >
                 {codeStr}
               </SyntaxHighlighter>
             ) : (
-              <div className="p-8 text-sm text-[#718096] font-mono italic flex-1">
+              <div className="p-8 text-sm font-mono italic flex-1 theme-surface" style={{ color: 'var(--text-muted)' }}>
                 // Translation will appear here…
               </div>
             )}
@@ -94,45 +110,54 @@ export default function CodeOutput({ result, targetLanguage, fallback, loading =
         )}
 
         {activeTab === 'Debugging' && (
-          <div className="border border-[#e5e4d0] rounded-xl p-6 h-full overflow-y-auto" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(225,217,188,0.55) 100%)'}}>
+          <div
+            className="border rounded-xl p-6 h-full overflow-y-auto theme-surface"
+            style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface)' }}
+          >
             {loading ? (
-              <div className="space-y-4 animate-pulse">
-                <div className="h-4 bg-[#e5e4d0] rounded w-10/12" />
-                <div className="h-4 bg-[#e5e4d0] rounded w-9/12" />
-                <div className="h-4 bg-[#e5e4d0] rounded w-11/12" />
-                <div className="h-4 bg-[#e5e4d0] rounded w-8/12" />
+              <div className="space-y-4">
+                <div className="skeleton h-4 rounded w-10/12" />
+                <div className="skeleton h-4 rounded w-9/12" />
+                <div className="skeleton h-4 rounded w-11/12" />
+                <div className="skeleton h-4 rounded w-8/12" />
               </div>
             ) : Array.isArray(result?.debuggingSteps) && result.debuggingSteps.length ? (
-              <div className="space-y-3 text-sm text-[#2d3748]/70 leading-relaxed font-mono">
+              <div className="space-y-3 text-sm leading-relaxed font-mono" style={{ color: 'var(--text)' }}>
                 {result.debuggingSteps.map((step, i) => (
-                  <p key={i} className="flex gap-3 items-start"><span className="text-[#667eea]/60 mt-0.5">↳</span> <span>{step}</span></p>
+                  <p key={i} className="flex gap-3 items-start">
+                    <span className="mt-0.5" style={{ color: 'var(--accent)' }}>↳</span>
+                    <span>{step}</span>
+                  </p>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-[#718096] font-mono italic">
-        // Debugging steps will appear here.
+              <p className="text-sm font-mono italic" style={{ color: 'var(--text-muted)' }}>
+                // Debugging steps will appear here.
               </p>
             )}
           </div>
         )}
 
         {activeTab === 'Algorithm' && (
-          <div className="border border-[#e5e4d0] rounded-xl p-6 h-full overflow-y-auto" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(225,217,188,0.55) 100%)'}}>
+          <div
+            className="border rounded-xl p-6 h-full overflow-y-auto theme-surface"
+            style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface)' }}
+          >
             {loading ? (
-              <div className="space-y-4 animate-pulse">
-                <div className="h-4 bg-[#e5e4d0] rounded w-9/12" />
-                <div className="h-4 bg-[#e5e4d0] rounded w-10/12" />
-                <div className="h-4 bg-[#e5e4d0] rounded w-8/12" />
-                <div className="h-4 bg-[#e5e4d0] rounded w-9/12" />
+              <div className="space-y-4">
+                <div className="skeleton h-4 rounded w-9/12" />
+                <div className="skeleton h-4 rounded w-10/12" />
+                <div className="skeleton h-4 rounded w-8/12" />
+                <div className="skeleton h-4 rounded w-9/12" />
               </div>
             ) : Array.isArray(result?.algorithm) && result.algorithm.length ? (
-              <ol className="list-decimal list-outside ml-4 space-y-3 text-sm text-[#2d3748]/70 leading-relaxed marker:text-[#718096]">
+              <ol className="list-decimal list-outside ml-4 space-y-3 text-sm leading-relaxed" style={{ color: 'var(--text)' }}>
                 {result.algorithm.map((step, i) => (
-                  <li key={i} className="pl-2">{step}</li>
+                  <li key={i} className="pl-2" style={{ '--tw-prose-counters': 'var(--text-muted)' }}>{step}</li>
                 ))}
               </ol>
             ) : (
-              <p className="text-sm text-[#718096] font-mono italic">
+              <p className="text-sm font-mono italic" style={{ color: 'var(--text-muted)' }}>
                 // Algorithm steps will appear here.
               </p>
             )}
