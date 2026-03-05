@@ -14,11 +14,10 @@ export default function LanguagePicker({ selected, onChange }) {
         <button
           key={lang.value}
           onClick={() => onChange(lang.value)}
-          className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-            selected === lang.value
-              ? 'bg-zinc-900 text-white border-zinc-900'
-              : 'bg-white text-zinc-600 border-zinc-300 hover:border-zinc-500 hover:text-zinc-900'
-          }`}
+          className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-300 ${selected === lang.value
+              ? 'bg-[#667eea]/15 text-[#667eea] border-[#667eea]/40 shadow-[0_0_10px_rgba(102,126,234,0.15)] scale-105'
+              : 'bg-transparent text-[#718096] border-[#e5e4d0] hover:border-[#d4d0b0] hover:text-[#2d3748]'
+            }`}
         >
           {lang.label}
         </button>

@@ -23,11 +23,11 @@ export default function TranslatorPage() {
   const isLoading = loading || uploading;
 
   return (
-    <main className="p-6">
+    <main className="p-6 relative z-10">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* Left: Input */}
-          <div className="flex-1 min-w-0 bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+          <div className="flex-1 min-w-0 backdrop-blur-xl border border-[#e5e4d0] transition-all duration-300 hover:border-[#d4d0b0] rounded-2xl p-6 shadow-lg shadow-gray-300/40" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(240,240,219,0.85) 100%)'}}>
             <CodeInput
               code={code}
               onCodeChange={setCode}
@@ -40,11 +40,8 @@ export default function TranslatorPage() {
             />
           </div>
 
-          {/* Divider */}
-          <div className="hidden lg:block w-px bg-zinc-200 self-stretch" />
-
           {/* Right: Output */}
-          <div className="flex-1 min-w-0 bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+          <div className="flex-1 min-w-0 backdrop-blur-xl border border-[#e5e4d0] transition-all duration-300 hover:border-[#d4d0b0] rounded-2xl p-6 shadow-lg shadow-gray-300/40 flex flex-col" style={{background: 'linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(225,217,188,0.85) 100%)'}}>
             <CodeOutput
               result={result}
               targetLanguage={targetLanguage}

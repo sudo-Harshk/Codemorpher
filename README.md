@@ -73,6 +73,7 @@ For more detailed technical information, please refer to the files in the `docs`
 - **[Architecture](docs/architecture.md)**: High-level overview of the frontend and backend architecture.
 - **[API Reference](docs/api.md)**: Details on the backend API endpoints.
 - **[Setup Guide](docs/setup.md)**: Instructions for setting up the project locally.
+- **[Deployment Guide](docs/deployment.md)**: Complete guide to deploying the backend on Render and the frontend on Firebase.
 
 ##  How to Contribute
 

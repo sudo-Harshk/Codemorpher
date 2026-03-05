@@ -1,10 +1,64 @@
 @import "tailwindcss";
 
 :root {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Outfit', 'Inter', sans-serif;
+
+  /* Light theme (default) */
+  color-scheme: light dark;
+  --bg: #f4f5fb;
+  --bg-elevated: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #eef1ff;
+
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --border-subtle: #e5e7eb;
+
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.14);
+
+  --danger: #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.1);
+  --success: #22c55e;
+
+  --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.08);
 }
 
-code, pre, textarea.code-input {
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #020617;
+    --bg-elevated: #020617;
+    --surface: #020617;
+    --surface-2: #020617;
+
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #1f2937;
+    --border-subtle: #111827;
+
+    --accent: #6366f1;
+    --accent-hover: #818cf8;
+    --accent-soft: rgba(99, 102, 241, 0.22);
+
+    --danger: #f97373;
+    --danger-soft: rgba(248, 113, 113, 0.18);
+    --success: #4ade80;
+
+    --shadow-soft: 0 20px 55px rgba(15, 23, 42, 0.8);
+  }
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+code,
+pre,
+textarea.code-input {
   font-family: 'JetBrains Mono', monospace;
 }
 
@@ -13,13 +67,16 @@ code, pre, textarea.code-input {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #f4f4f5;
+  background: rgba(148, 163, 184, 0.16);
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #a1a1aa;
+  background: rgba(148, 163, 184, 0.65);
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #71717a;
+  background: rgba(148, 163, 184, 0.9);
 }
