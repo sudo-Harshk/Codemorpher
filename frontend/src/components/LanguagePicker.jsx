@@ -18,20 +18,20 @@ export default function LanguagePicker({ selected, onChange }) {
           style={
             selected === lang.value
               ? {
-                  backgroundColor: 'var(--accent-soft)',
-                  color: 'var(--accent)',
-                  borderColor: 'var(--accent)',
-                  transform: 'scale(1.05)',
-                }
+                backgroundColor: 'var(--secondary-soft)',
+                color: 'var(--secondary)',
+                borderColor: 'var(--secondary)',
+                transform: 'scale(1.05)',
+              }
               : {
-                  backgroundColor: 'transparent',
-                  color: 'var(--text-muted)',
-                  borderColor: 'var(--border)',
-                }
+                backgroundColor: 'transparent',
+                color: 'var(--text-muted)',
+                borderColor: 'var(--border)',
+              }
           }
           onMouseEnter={(e) => {
             if (selected !== lang.value) {
-              e.currentTarget.style.borderColor = 'var(--accent)';
+              e.currentTarget.style.borderColor = 'var(--secondary)';
               e.currentTarget.style.color = 'var(--text)';
             }
           }}

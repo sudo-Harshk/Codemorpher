@@ -53,19 +53,19 @@ export default function HistoryTable({ rows }) {
   };
 
   return (
-    <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface)' }}>
+    <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg)' }}>
       <table className="w-full text-sm">
-        <thead style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--surface)' }}>
+        <thead style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--border)', color: 'var(--surface)' }}>
           <tr>
-            <th className="text-left px-4 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Time</th>
-            <th className="text-left px-4 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Target</th>
-            <th className="text-left px-4 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Engine</th>
-            <th className="text-left px-4 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Status</th>
-            <th className="px-4 py-4"></th>
+            <th className="text-left px-4 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--bg)' }}>Time</th>
+            <th className="text-left px-4 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--bg)' }}>Target</th>
+            <th className="text-left px-4 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--bg)' }}>Engine</th>
+            <th className="text-left px-4 py-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--bg)' }}>Status</th>
+            <th className="px-4 py-4" style={{ color: 'var(--bg)' }}></th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => {
+          {rows.map((row, index) => {
             let code = '';
             try { code = JSON.parse(row.translatedCode || '[]').join('\n'); } catch { }
 
@@ -73,12 +73,15 @@ export default function HistoryTable({ rows }) {
               <Fragment key={row.id}>
                 <tr
                   className="transition-colors cursor-pointer"
-                  style={{ borderBottom: '1px solid var(--border-subtle)' }}
+                  style={{
+                    borderBottom: '1px solid var(--border-subtle)',
+                    backgroundColor: index % 2 === 0 ? 'transparent' : 'var(--surface)'
+                  }}
                   onClick={() => toggle(row.id)}
                   onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--surface-2)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = index % 2 === 0 ? 'transparent' : 'var(--surface)'; }}
                 >
-                  <td className="px-4 py-4" style={{ color: 'var(--text)' }}>
+                  <td className="px-4 py-4" style={{ color: 'var(--text-muted)' }}>
                     {new Date(row.timestamp).toLocaleString()}
                   </td>
                   <td className="px-4 py-4">

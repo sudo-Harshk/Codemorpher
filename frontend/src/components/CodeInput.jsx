@@ -49,7 +49,11 @@ export default function CodeInput({
       </div>
 
       {/* Error messages */}
-      {error && <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p>}
+      {error && (
+        <p className="text-sm flex items-center gap-2 font-medium" style={{ color: 'var(--danger)' }}>
+          <span role="img" aria-label="error">⚠️</span> {error}
+        </p>
+      )}
 
       {/* Language Picker */}
       <div>
@@ -62,22 +66,25 @@ export default function CodeInput({
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={loading}
-          className="flex-1 min-w-[140px] px-6 py-2.5 border rounded-full text-sm font-medium disabled:opacity-40 transition-colors"
+          className="flex-1 min-w-[140px] px-6 py-2.5 border rounded-full text-sm font-medium disabled:opacity-40 transition-colors shadow-sm"
           style={{
-            backgroundColor: 'var(--surface-2)',
-            borderColor: 'var(--border)',
-            color: 'var(--text)',
+            backgroundColor: 'var(--secondary)',
+            borderColor: 'var(--border-subtle)',
+            color: 'var(--bg)',
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--secondary-soft)'; e.currentTarget.style.color = 'var(--text)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--secondary)'; e.currentTarget.style.color = 'var(--bg)'; }}
         >
           📁 Upload Image
         </button>
         <button
           onClick={onTranslate}
           disabled={loading}
-          className="flex-1 min-w-[140px] px-6 py-2.5 rounded-full text-sm font-bold text-white hover:scale-105 active:scale-95 disabled:scale-100 disabled:opacity-40 transition-all shadow-sm"
+          className="flex-1 min-w-[140px] px-6 py-2.5 rounded-full text-sm font-bold hover:scale-105 active:scale-95 disabled:scale-100 disabled:opacity-40 transition-all shadow-sm"
           style={{
             backgroundColor: 'var(--accent)',
             border: '1px solid var(--accent)',
+            color: '#fefae0', /* High contrast against Rusty Orange */
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--accent-hover)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--accent)'; }}
