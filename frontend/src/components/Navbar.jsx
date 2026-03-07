@@ -18,10 +18,10 @@ export default function Navbar() {
     const root = document.documentElement;
     if (dark) {
       root.classList.add('dark');
-      try { localStorage.setItem('theme', 'dark'); } catch {}
+      try { localStorage.setItem('theme', 'dark'); } catch { }
     } else {
       root.classList.remove('dark');
-      try { localStorage.setItem('theme', 'light'); } catch {}
+      try { localStorage.setItem('theme', 'light'); } catch { }
     }
   }, [dark]);
 

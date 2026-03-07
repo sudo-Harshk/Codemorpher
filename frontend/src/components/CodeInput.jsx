@@ -22,7 +22,7 @@ export default function CodeInput({
         <button
           onClick={() => onCodeChange('')}
           title="Clear"
-          className="text-xs transition-colors"
+          className="text-xs transition-colors cursor-pointer"
           style={{ color: 'var(--text-muted)' }}
         >
           Clear
@@ -66,7 +66,7 @@ export default function CodeInput({
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={loading}
-          className="flex-1 min-w-[140px] px-6 py-2.5 border rounded-full text-sm font-medium disabled:opacity-40 transition-colors shadow-sm"
+          className="flex-1 min-w-[140px] px-6 py-2.5 border rounded-full text-sm font-medium disabled:opacity-40 transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0 hover:shadow-md active:shadow-sm"
           style={{
             backgroundColor: 'var(--secondary)',
             borderColor: 'var(--border-subtle)',
@@ -80,11 +80,11 @@ export default function CodeInput({
         <button
           onClick={onTranslate}
           disabled={loading}
-          className="flex-1 min-w-[140px] px-6 py-2.5 rounded-full text-sm font-bold hover:scale-105 active:scale-95 disabled:scale-100 disabled:opacity-40 transition-all shadow-sm"
+          className="flex-1 min-w-[140px] px-6 py-2.5 rounded-full text-sm font-bold hover:scale-105 active:scale-95 disabled:scale-100 disabled:opacity-40 transition-all shadow-sm cursor-pointer disabled:cursor-not-allowed"
           style={{
             backgroundColor: 'var(--accent)',
             border: '1px solid var(--accent)',
-            color: '#fefae0', /* High contrast against Rusty Orange */
+            color: 'var(--bg)', /* Dynamic contrast against Accent color */
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--accent-hover)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--accent)'; }}
