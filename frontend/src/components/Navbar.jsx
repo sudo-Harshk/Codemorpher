@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import Switch from './ui/sky-toggle';
 
 export default function Navbar() {
   const { pathname } = useLocation();
@@ -53,32 +54,7 @@ export default function Navbar() {
       <div className="flex items-center gap-6">
         <Link to="/" className={linkClass('/')} style={linkStyle('/')}>Translator</Link>
         <Link to="/history" className={linkClass('/history')} style={linkStyle('/history')}>History</Link>
-        <button
-          onClick={() => setDark((v) => !v)}
-          aria-label="Toggle theme"
-          style={{
-            position: 'relative',
-            width: 46,
-            height: 24,
-            backgroundImage: `linear-gradient(90deg, var(--accent-soft), var(--secondary-soft))`,
-            border: '1px solid var(--border)',
-            borderRadius: 9999,
-            padding: 0
-          }}
-        >
-          <span
-            style={{
-              position: 'absolute',
-              top: 2,
-              left: dark ? 26 : 2,
-              width: 20,
-              height: 20,
-              borderRadius: '50%',
-              backgroundImage: `linear-gradient(135deg, var(--accent), var(--secondary))`,
-              transition: 'left 150ms ease',
-            }}
-          />
-        </button>
+        <Switch checked={dark} onChange={() => setDark((v) => !v)} />
       </div>
     </nav>
   );

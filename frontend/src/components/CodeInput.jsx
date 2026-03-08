@@ -84,7 +84,7 @@ export default function CodeInput({
           style={{
             backgroundColor: 'var(--accent)',
             border: '1px solid var(--accent)',
-            color: 'var(--bg)', /* Dynamic contrast against Accent color */
+            color: 'var(--bg)',
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--accent-hover)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--accent)'; }}
