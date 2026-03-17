@@ -6,14 +6,17 @@ export default function useTranslator() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [errorCode, setErrorCode] = useState('');
   const [fallback, setFallback] = useState(false);
 
   const translate = async (javaCode, targetLanguage) => {
     if (!javaCode.trim()) {
-      setError('Please enter some Java code.');
+      setError('Please enter some Java code to translate.');
+      setErrorCode('EMPTY_INPUT');
       return;
     }
     setError('');
+    setErrorCode('');
     setLoading(true);
     setFallback(false);
 
@@ -27,6 +30,7 @@ export default function useTranslator() {
 
       if (!res.ok) {
         setError(data.error || 'Translation failed. Please try again.');
+        setErrorCode(data.code || '');
         return;
       }
 
@@ -34,10 +38,16 @@ export default function useTranslator() {
       if (data.fallback) setFallback(true);
     } catch {
       setError('Network error. Is the backend running?');
+      setErrorCode('NETWORK_ERROR');
     } finally {
       setLoading(false);
     }
   };
 
-  return { result, loading, error, fallback, translate, setError };
+  const clearError = () => {
+    setError('');
+    setErrorCode('');
+  };
+
+  return { result, loading, error, errorCode, fallback, translate, setError, setErrorCode, clearError };
 }

@@ -14,13 +14,21 @@ export default function TranslatorPage() {
   const [code, setCode] = useState(DEFAULT_CODE);
   const [targetLanguage, setTargetLanguage] = useState('javascript');
 
-  const { result, loading, error, fallback, translate, setError } = useTranslator();
+  const { result, loading, error, errorCode, fallback, translate, setError, setErrorCode, clearError } = useTranslator();
   const { uploading, uploadFile } = useImageUpload({
     onCode: setCode,
-    onError: setError,
+    onError: (msg, code) => {
+      setError(msg);
+      setErrorCode(code || '');
+    },
   });
 
   const isLoading = loading || uploading;
+
+  const handleCodeChange = (newCode) => {
+    setCode(newCode);
+    if (error) clearError();
+  };
 
   return (
     <main className="p-6 relative z-10">
@@ -36,13 +44,15 @@ export default function TranslatorPage() {
           >
             <CodeInput
               code={code}
-              onCodeChange={setCode}
+              onCodeChange={handleCodeChange}
               targetLanguage={targetLanguage}
               onLanguageChange={setTargetLanguage}
               onTranslate={() => translate(code, targetLanguage)}
               onUpload={uploadFile}
               loading={isLoading}
               error={error}
+              errorCode={errorCode}
+              onDismissError={clearError}
             />
           </div>
 

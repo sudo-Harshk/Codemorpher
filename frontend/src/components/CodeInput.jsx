@@ -1,6 +1,16 @@
 import { useRef } from 'react';
 import LanguagePicker from './LanguagePicker.jsx';
 
+const VALIDATION_ERROR_CODES = [
+  'EMPTY_INPUT',
+  'TOO_SHORT',
+  'NOT_CODE_LIKE',
+  'NON_CODE_FORMAT',
+  'WRONG_LANGUAGE',
+  'INVALID_JAVA_SYNTAX',
+  'PARSE_FAILED',
+];
+
 export default function CodeInput({
   code,
   onCodeChange,
@@ -10,6 +20,8 @@ export default function CodeInput({
   onUpload,
   loading,
   error,
+  errorCode,
+  onDismissError,
 }) {
   const fileInputRef = useRef(null);
   const lineCount = code.split('\n').length;
@@ -50,9 +62,50 @@ export default function CodeInput({
 
       {/* Error messages */}
       {error && (
-        <p className="text-sm flex items-center gap-2 font-medium" style={{ color: 'var(--danger)' }}>
-          <span role="img" aria-label="error">⚠️</span> {error}
-        </p>
+        <div
+          className="rounded-xl flex gap-3 items-start p-4 animate-slide-in-error"
+          style={{
+            backgroundColor: VALIDATION_ERROR_CODES.includes(errorCode)
+              ? 'var(--warning-soft)'
+              : 'var(--danger-soft)',
+            borderLeft: `4px solid ${VALIDATION_ERROR_CODES.includes(errorCode) ? 'var(--warning)' : 'var(--danger)'}`,
+          }}
+        >
+          <div
+            className="shrink-0 mt-0.5"
+            style={{ color: VALIDATION_ERROR_CODES.includes(errorCode) ? 'var(--warning)' : 'var(--danger)' }}
+            aria-hidden
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4" />
+              <path d="M12 16h.01" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p
+              className="text-sm leading-relaxed pr-6"
+              style={{
+                color: VALIDATION_ERROR_CODES.includes(errorCode) ? 'var(--text)' : 'var(--danger)',
+              }}
+            >
+              {error}
+            </p>
+          </div>
+          {onDismissError && (
+            <button
+              type="button"
+              onClick={onDismissError}
+              className="shrink-0 p-1 rounded-md transition-colors hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-current"
+              style={{ color: 'var(--text-muted)' }}
+              aria-label="Dismiss"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
       )}
 
       {/* Language Picker */}

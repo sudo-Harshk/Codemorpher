@@ -8,7 +8,7 @@ export default function useImageUpload({ onCode, onError }) {
   const uploadFile = async (file) => {
     if (!file) return;
     setUploading(true);
-    onError('');
+    onError('', '');
 
     try {
       const formData = new FormData();
@@ -18,7 +18,8 @@ export default function useImageUpload({ onCode, onError }) {
       const data = await res.json();
 
       if (!res.ok) {
-        onError(data.error || 'Failed to process image.');
+        const msg = data.error || 'Failed to process image.';
+        onError(msg, data.code);
         return;
       }
 
