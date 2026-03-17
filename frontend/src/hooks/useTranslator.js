@@ -11,6 +11,7 @@ export default function useTranslator() {
 
   const translate = async (javaCode, targetLanguage) => {
     if (!javaCode.trim()) {
+      setResult(null);
       setError('Please enter some Java code to translate.');
       setErrorCode('EMPTY_INPUT');
       return;
@@ -29,6 +30,7 @@ export default function useTranslator() {
       const data = await res.json();
 
       if (!res.ok) {
+        setResult(null);
         setError(data.error || 'Translation failed. Please try again.');
         setErrorCode(data.code || '');
         return;
@@ -37,6 +39,7 @@ export default function useTranslator() {
       setResult(data);
       if (data.fallback) setFallback(true);
     } catch {
+      setResult(null);
       setError('Network error. Is the backend running?');
       setErrorCode('NETWORK_ERROR');
     } finally {
