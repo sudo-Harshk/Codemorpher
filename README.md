@@ -30,7 +30,8 @@ The frontend will run at `http://localhost:5173`.
 -  **Copy**: Copy translated code directly from the UI  
 -  **Responsive Design**: Supports mobile, tablet, and desktop viewports  
 -  **Image-to-Code**: Upload and extract Java code from images using Google's Gemini API
--  **Error Handling**: Graceful fallback for network/server errors
+-  **Java-Only Validation**: Three-layer input validation rejects non-Java code (Python, JavaScript, etc.) for both paste and image upload
+-  **Error Handling**: Graceful fallback for network/server errors, with clear inline validation messages
 -  **Docker Ready**: Production-optimized `Dockerfile` setups with Nginx for the frontend.
 
 ## Tech Stack
@@ -44,6 +45,7 @@ The frontend will run at `http://localhost:5173`.
 
 ### Backend:
 - Node.js + Express  
+- Three-layer Java validation (`program-language-detector`, `tree-sitter-java`) for paste and image upload
 - Translator provider layer (`translator.js`) with OpenRouter SDK and Google GenAI SDK as primary engines (plus a mock provider for local testing) 
 - SQLite (`better-sqlite3`) for logging translation requests & errors
 - Multer for robust multipart image upload handling

@@ -75,6 +75,7 @@ if (!fs.existsSync(uploadDir)) {
 
 // ---- Import Services ----
 const { translateWithProvider } = require('./translators/translator');
+const { validateJavaInput } = require('./validation/javaValidator');
 const { logTranslation, logError } = require('./db/logService');
 const db = require('./db/database');
 const { extractJavaCodeFromImage } = require('./vision/geminiImageParser');
@@ -120,8 +121,18 @@ app.post('/translate', async (req, res) => {
     return res.status(400).json({ error: ERROR_MESSAGES.UNSUPPORTED_LANGUAGE });
   }
 
-  // TODO: Implement more robust input validation for javaCode (e.g., character escaping) and
-  // targetLanguage (e.g., whitelist of supported languages) to prevent abuse and ensure expected input.
+  // Three-layer Java input validation
+  const validation = validateJavaInput(javaCode);
+  if (!validation.valid) {
+    const payload = {
+      error: validation.error,
+      code: validation.code,
+    };
+    if (validation.detectedLanguage) {
+      payload.detectedLanguage = validation.detectedLanguage;
+    }
+    return res.status(400).json(payload);
+  }
 
   const input = { javaCode, targetLanguage };
 
@@ -234,6 +245,15 @@ app.post('/upload', (req, res, next) => {
     const cleanCode = typeof codeString === 'string'
       ? codeString.replace(/^```[a-z]*\n?/im, '').replace(/```$/, '').trim()
       : '';
+
+    // Validate extracted code is Java (reject Python, JS, etc. at upload time)
+    const validation = validateJavaInput(cleanCode);
+    if (!validation.valid) {
+      console.log(`❌ [${sessionId}] Extracted code is not Java. ${validation.error}`);
+      const payload = { error: validation.error, code: validation.code };
+      if (validation.detectedLanguage) payload.detectedLanguage = validation.detectedLanguage;
+      return res.status(400).json(payload);
+    }
 
     console.log(`✅ [${sessionId}] Java code extracted successfully.`);
     res.json({ javaCode: cleanCode });

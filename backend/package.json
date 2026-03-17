@@ -23,7 +23,10 @@
     "file-type": "^16.5.3",
     "mime-types": "^3.0.1",
     "multer": "^1.4.5-lts.2",
-    "openai": "^4.95.1"
+    "openai": "^4.95.1",
+    "program-language-detector": "^0.0.12",
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-java": "^0.23.5"
   },
   "devDependencies": {
     "@gradio/client": "^1.14.2"

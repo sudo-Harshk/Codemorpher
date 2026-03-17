@@ -6,7 +6,7 @@ Follow these instructions to set up the project on your local machine for develo
 
 ## Prerequisites
 - Node.js installed (v16.0 or higher recommended).
-- Optional: Python installed for potential Node native extensions.
+- Optional: Python, `make`, and `g++` for building native Node modules (e.g., `tree-sitter-java`). Most platforms use prebuilt binaries; Alpine/Docker may require these for compilation.
 - Create an account for OpenRouter and Google Gemini APIs.
 
 ## Dependencies
@@ -52,9 +52,20 @@ Follow these instructions to set up the project on your local machine for develo
    ```
    *The client UI runs at http://localhost:5173*
 
+## Input Validation
+
+The backend enforces Java-only input via a three-layer validator:
+- **Layer 1**: Sanity checks (empty, too short, non-code).
+- **Layer 2**: Language detection (`program-language-detector`) — rejects Python, JavaScript, etc.
+- **Layer 3**: Syntax validation (`tree-sitter-java`) — rejects invalid Java, C#, Kotlin, Scala.
+
+Validation runs on both `/translate` (typed/pasted code) and `/upload` (extracted image code).
+
+---
+
 ## Docker Setup
 
-Codemorpher supports containerized deployment using Docker.
+Codemorpher supports containerized deployment using Docker. The backend image includes build tools for native modules (`tree-sitter-java`).
 
 1. **Build and Run the Backend Image**:
    ```bash
