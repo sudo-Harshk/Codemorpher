@@ -2,7 +2,7 @@
 
 # Codemorpher
 
-**Translate Java code into multiple languages — instantly.**
+**Translate Java code into multiple languages - instantly.**
 
 [![Node.js](https://img.shields.io/badge/Node.js-22.x-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
 [![React](https://img.shields.io/badge/React-19.x-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
