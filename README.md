@@ -4,7 +4,7 @@
 
 **Translate Java code into multiple languages - instantly.**
 
-[![Node.js](https://img.shields.io/badge/Node.js-22.x-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
 [![React](https://img.shields.io/badge/React-19.x-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
 [![Express](https://img.shields.io/badge/Express-5.x-000000?style=flat-square&logo=express&logoColor=white)](https://expressjs.com)
@@ -57,13 +57,13 @@ Input can be typed/pasted directly **or** uploaded as an image — Google Gemini
 ### Backend
 | Technology | Version | Purpose |
 |---|---|---|
-| Node.js | 22.x | Runtime |
+| Node.js | 22+ | Runtime |
 | Express | 5.x | HTTP framework |
 | OpenRouter SDK | 0.3.x | Primary LLM translation engine |
-| Google GenAI SDK | 0.24.x | Gemini Vision for image parsing |
+| Google Generative AI SDK | 0.24.x | Gemini Vision for image parsing |
 | tree-sitter + tree-sitter-java | 0.21 / 0.23 | Layer 3 AST syntax validation |
 | program-language-detector | 0.0.12 | Layer 2 language detection |
-| better-sqlite3 | 12.x | Translation history logging |
+| node:sqlite (built-in) | Node 22.5+ | Translation history logging — no native deps |
 | Multer | 1.4.x | Multipart image upload handling |
 | dotenv | 16.x | Environment variable management |
 
@@ -131,7 +131,7 @@ codemorpher/
 │   ├── vision/
 │   │   └── geminiImageParser.js   # Google Gemini Vision integration
 │   └── db/
-│       ├── database.js            # SQLite schema init
+│       ├── database.js            # SQLite schema init (node:sqlite)
 │       └── logService.js          # Translation & error logging
 │
 ├── frontend/
@@ -150,7 +150,7 @@ codemorpher/
     ├── api.md                     # API endpoint reference
     ├── architecture.md            # System architecture deep-dive
     ├── setup.md                   # Local & Docker setup
-    └── deployment.md              # Render + Firebase deployment guide
+    └── deployment.md              # Deployment guide
 ```
 
 ---
@@ -159,7 +159,7 @@ codemorpher/
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org) v16 or higher (v22 recommended)
+- [Node.js](https://nodejs.org) v22.5 or higher (required for built-in `node:sqlite`)
 - An [OpenRouter](https://openrouter.ai) API key (free tier available)
 - A [Google Gemini](https://aistudio.google.com) API key (free tier available)
 - [Docker](https://www.docker.com) (optional, for containerized setup)
@@ -203,7 +203,7 @@ npm start
 #### 3. Start the frontend
 
 ```bash
-cd ../frontend
+cd  frontend
 npm install
 npm run dev
 # Frontend running at http://localhost:5173
@@ -303,10 +303,9 @@ docker run -p 80:80 -e BACKEND_URL=http://localhost:8080 codemorpher-frontend
 
 ## Deployment
 
-| Service | Component | Guide |
-|---|---|---|
-| [Render](https://render.com) | Backend (Node.js) | [docs/deployment.md](docs/deployment.md) |
-| [Firebase Hosting](https://firebase.google.com/docs/hosting) | Frontend (static SPA) | [docs/deployment.md](docs/deployment.md) |
+The backend is deployed on [Render](https://render.com) as a Node.js service. The frontend is a static SPA that can be deployed to any static hosting platform (Render, Vercel, Netlify, etc.) or served via the Docker + Nginx container.
+
+> See [docs/deployment.md](docs/deployment.md) for step-by-step instructions.
 
 ---
 
@@ -317,7 +316,7 @@ docker run -p 80:80 -e BACKEND_URL=http://localhost:8080 codemorpher-frontend
 | [docs/api.md](docs/api.md) | Full API endpoint reference with request/response schemas |
 | [docs/architecture.md](docs/architecture.md) | System design, data flow, and component breakdown |
 | [docs/setup.md](docs/setup.md) | Detailed local and Docker setup instructions |
-| [docs/deployment.md](docs/deployment.md) | Step-by-step Render + Firebase deployment guide |
+| [docs/deployment.md](docs/deployment.md) | Deployment guide |
 
 ---
 
